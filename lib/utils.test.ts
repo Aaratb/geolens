@@ -7,6 +7,7 @@ describe("cn", () => {
   });
 
   it("filters falsy values", () => {
-    expect(cn("p-2", false && "p-4", null, undefined)).toBe("p-2");
+    const flag: boolean = false;
+    expect(cn("p-2", flag && "p-4", null, undefined)).toBe("p-2");
   });
 });
