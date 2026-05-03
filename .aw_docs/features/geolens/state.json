@@ -1,0 +1,92 @@
+{
+  "feature_slug": "geolens",
+  "feature_title": "GEOlens (SEO + AEO/GEO Reviewer)",
+  "command": "feature-pro",
+  "current_phase": 6,
+  "phases": {
+    "1": "done",
+    "2": "done",
+    "3": "done",
+    "3.5": "done",
+    "4": "done",
+    "5": "done",
+    "6": "in_progress",
+    "7": "pending",
+    "8": "pending",
+    "9": "pending",
+    "10": "pending",
+    "11": "pending",
+    "12": "pending",
+    "13": "pending",
+    "14": "pending",
+    "15": "pending"
+  },
+  "milestones": {
+    "M1_foundation": "done_pending_install",
+    "M2_scan_engine": "pending",
+    "M3_streaming_ui": "pending",
+    "M4_polish_launch": "pending"
+  },
+  "agent_runs": {},
+  "decisions": {
+    "stack": "Next.js 16 + TypeScript + Tailwind + shadcn/ui + Vercel AI SDK",
+    "seo_engine": "Google PageSpeed Insights API",
+    "aeo_engines": ["openai", "anthropic", "perplexity", "gemini"],
+    "auth_provider": "clerk",
+    "database": "neon_postgres_drizzle",
+    "blob_storage": "vercel_blob",
+    "cache_kv": "upstash_redis",
+    "ai_routing": "vercel_ai_gateway",
+    "scan_orchestration": "spawn_detach_route_handler_plus_redis_pubsub",
+    "design_direction": "hybrid_C_landing_A_report",
+    "brand_name": "GEOlens",
+    "north_star": "scans_completed",
+    "deploy_target": "vercel_pro"
+  },
+  "artifacts": {
+    "1": [],
+    "2": [".aw_docs/features/geolens/requirements.md"],
+    "3": [".aw_docs/features/geolens/prd.md"],
+    "3.5": [".aw_docs/features/geolens/competitive-research.md"],
+    "4": [
+      ".aw_docs/features/geolens/design/directions.md",
+      ".aw_docs/features/geolens/design/landing-direction-a.html",
+      ".aw_docs/features/geolens/design/landing-direction-b.html",
+      ".aw_docs/features/geolens/design/landing-direction-c.html"
+    ],
+    "5": [
+      ".aw_docs/features/geolens/spec.md",
+      ".aw_docs/features/geolens/tasks.md",
+      ".aw_docs/features/geolens/adrs/adr-001-auth.md",
+      ".aw_docs/features/geolens/adrs/adr-002-data-storage.md",
+      ".aw_docs/features/geolens/adrs/adr-003-scan-orchestration.md"
+    ],
+    "6_M1": [
+      "package.json",
+      "tsconfig.json",
+      "next.config.ts",
+      "postcss.config.mjs",
+      "eslint.config.mjs",
+      ".prettierrc.json",
+      ".prettierignore",
+      ".gitignore",
+      ".env.example",
+      ".lintstagedrc.json",
+      "middleware.ts",
+      "drizzle.config.ts",
+      "vitest.config.ts",
+      "vitest.setup.ts",
+      "app/layout.tsx",
+      "app/page.tsx",
+      "app/globals.css",
+      "lib/utils.ts",
+      "lib/utils.test.ts",
+      "lib/ui/theme-provider.tsx",
+      "lib/auth/current-user.ts",
+      "lib/db/schema.ts",
+      "lib/db/client.ts",
+      ".github/workflows/ci.yml",
+      "README.md"
+    ]
+  }
+}

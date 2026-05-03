@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GEOlens — Direction C (Editorial Audit)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: "Inter", ui-sans-serif, system-ui; background: #FAFAF7; color: #16161A; }
+    .serif { font-family: "Fraunces", Georgia, serif; font-optical-sizing: auto; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+    .rule { border-top: 1px solid rgba(0,0,0,0.10); }
+    .ruleb { border-bottom: 1px solid rgba(0,0,0,0.10); }
+    .input-row {
+      border-bottom: 1.5px solid #16161A;
+    }
+    .score-good { color: #157F4D; }
+    .score-warn { color: #B5760F; }
+    .score-bad  { color: #A8334A; }
+    .pull {
+      border: 1px solid rgba(0,0,0,0.12);
+      background: #fff;
+    }
+    .small-caps { font-feature-settings: "smcp" 1, "c2sc" 1; letter-spacing: 0.08em; }
+    .marginalia { color: #56565C; }
+    .badge {
+      background: #16161A; color: #FAFAF7;
+      letter-spacing: 0.18em;
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+  <!-- masthead -->
+  <header class="max-w-6xl mx-auto px-8 pt-8 ruleb pb-4 flex items-end justify-between">
+    <div>
+      <div class="mono text-[11px] uppercase tracking-[0.18em] marginalia">Vol. 1 · Issue 01 · Beta</div>
+      <div class="serif text-[28px] font-semibold leading-none mt-1">GEOlens</div>
+    </div>
+    <nav class="flex items-center gap-6 text-[13px]">
+      <a class="hover:underline" href="#">Methodology</a>
+      <a class="hover:underline" href="#">Index</a>
+      <a class="hover:underline" href="#">About</a>
+      <a class="badge px-3 py-1 text-[11px]" href="#">SIGN IN</a>
+    </nav>
+  </header>
+
+  <!-- hero / lede -->
+  <main class="max-w-3xl mx-auto px-8 pt-16">
+    <div class="mono text-[11px] uppercase tracking-[0.22em] marginalia">An audit of how AI sees your site</div>
+    <h1 class="serif mt-3 text-[56px] leading-[1.04] font-semibold tracking-tight">
+      A second opinion on how AI<br/> sees your site.
+    </h1>
+    <p class="mt-6 text-[17px] leading-[1.6] text-neutral-700 max-w-xl">
+      GEOlens audits your website the way Lighthouse audits its performance — but for the AI search era.
+      We probe ChatGPT, Claude, Perplexity, and Gemini, then issue a numbered finding for every gap
+      between how you describe yourself and how AI describes you.
+    </p>
+
+    <!-- input -->
+    <form class="mt-12 flex items-end gap-4 input-row pb-3">
+      <span class="mono text-[12px] uppercase tracking-[0.18em] marginalia w-32">Submit URL</span>
+      <input
+        type="text"
+        placeholder="yourbrand.com"
+        class="flex-1 bg-transparent outline-none text-[22px] serif placeholder:text-neutral-400 pb-1"
+      />
+      <button class="serif text-[16px] font-semibold underline underline-offset-4">Begin audit →</button>
+    </form>
+
+    <!-- index stats -->
+    <div class="mt-3 flex items-center gap-6 text-[12px] marginalia">
+      <span><span class="mono">64</span> · average AEO score in our index</span>
+      <span><span class="mono">23%</span> · sites with a valid llms.txt</span>
+      <span><span class="mono">0.0</span> · cost to begin</span>
+    </div>
+  </main>
+
+  <!-- sample audit pull -->
+  <section class="max-w-5xl mx-auto px-8 mt-24">
+    <div class="grid grid-cols-12 gap-8">
+
+      <!-- marginalia column -->
+      <aside class="col-span-3 hidden md:block">
+        <div class="mono text-[11px] uppercase tracking-[0.18em] marginalia">Specimen</div>
+        <div class="serif text-[20px] mt-1 font-semibold">vercel.com</div>
+        <div class="mt-4 text-[13px] marginalia leading-[1.5]">
+          A live sample audit. Numbered findings on the right are the same format your report will produce.
+        </div>
+
+        <div class="rule mt-8 pt-4 mono text-[11px] uppercase tracking-[0.18em] marginalia">At-a-glance</div>
+        <div class="mt-3 space-y-2 text-[14px]">
+          <div class="flex justify-between"><span>SEO</span><span class="mono score-good">94</span></div>
+          <div class="flex justify-between"><span>AEO</span><span class="mono score-warn">71</span></div>
+          <div class="flex justify-between"><span>Citation rate</span><span class="mono score-warn">58%</span></div>
+          <div class="flex justify-between"><span>Hygiene</span><span class="mono score-warn">62</span></div>
+          <div class="flex justify-between"><span>Citability</span><span class="mono score-good">82</span></div>
+        </div>
+      </aside>
+
+      <!-- main audit column -->
+      <article class="col-span-12 md:col-span-9">
+        <div class="mono text-[11px] uppercase tracking-[0.22em] marginalia mb-4">Findings</div>
+
+        <!-- finding 1 -->
+        <div class="ruleb pb-8 mb-8">
+          <div class="flex items-baseline gap-4">
+            <span class="mono text-[12px] marginalia">#GL-01</span>
+            <h3 class="serif text-[28px] font-semibold leading-[1.15]">No <span class="mono">llms.txt</span> at the root.</h3>
+          </div>
+          <p class="mt-3 text-[16px] leading-[1.7] text-neutral-800 max-w-prose">
+            AI crawlers cannot find a curated map of your site. The <span class="mono">llms.txt</span> spec — emerging
+            since late 2024 — is now the lowest-cost, highest-leverage AEO win we measure. Affected: every probed engine.
+          </p>
+          <div class="mt-4 mono text-[12px] marginalia">Severity high · Estimated effort 30 min · Score impact +14</div>
+        </div>
+
+        <!-- finding 2 -->
+        <div class="ruleb pb-8 mb-8">
+          <div class="flex items-baseline gap-4">
+            <span class="mono text-[12px] marginalia">#GL-02</span>
+            <h3 class="serif text-[28px] font-semibold leading-[1.15]">Brand cited <span class="mono">0/3</span> times by Perplexity.</h3>
+          </div>
+          <p class="mt-3 text-[16px] leading-[1.7] text-neutral-800 max-w-prose">
+            ChatGPT and Claude both surface your brand in category placement queries. Perplexity does not, despite
+            indexing your domain — suggesting a citation source-trust gap rather than a discovery gap.
+          </p>
+          <div class="mt-4 mono text-[12px] marginalia">Severity medium · Effort 1–2 weeks · Score impact +9</div>
+        </div>
+
+        <!-- finding 3 -->
+        <div class="pb-2">
+          <div class="flex items-baseline gap-4">
+            <span class="mono text-[12px] marginalia">#GL-03</span>
+            <h3 class="serif text-[28px] font-semibold leading-[1.15]">Schema.org coverage is thin.</h3>
+          </div>
+          <p class="mt-3 text-[16px] leading-[1.7] text-neutral-800 max-w-prose">
+            Your pages emit <span class="mono">Organization</span> only. Adding <span class="mono">Article</span>,
+            <span class="mono">FAQPage</span>, and <span class="mono">Product</span> would lift extractability by an
+            estimated <span class="mono">14</span> points across all four probe engines.
+          </p>
+          <div class="mt-4 mono text-[12px] marginalia">Severity medium · Effort 2–3 days · Score impact +11</div>
+        </div>
+
+        <!-- locked -->
+        <div class="rule mt-12 pt-8 text-center">
+          <div class="mono text-[11px] uppercase tracking-[0.22em] marginalia mb-3">Continued</div>
+          <a href="#" class="serif text-[20px] font-semibold underline underline-offset-4">
+            Sign in to read all 12 findings →
+          </a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- footer -->
+  <footer class="max-w-6xl mx-auto px-8 mt-24 py-8 rule text-[12px] marginalia flex items-center justify-between">
+    <div>© 2026 GEOlens · A reviewer for the AI search era</div>
+    <div class="flex items-center gap-5">
+      <a href="#" class="hover:underline">Methodology</a>
+      <a href="#" class="hover:underline">Privacy</a>
+      <a href="#" class="hover:underline">Terms</a>
+    </div>
+  </footer>
+
+</body>
+</html>

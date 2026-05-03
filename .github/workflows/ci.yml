@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    name: typecheck · lint · test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Unit tests
+        run: npm test
+        env:
+          # Mock vars so tests that read env don't crash
+          DATABASE_URL: postgres://stub
+          IP_HASH_SALT: test-salt
+          SHARE_TOKEN_SECRET: test-secret
+
+  drizzle-drift:
+    name: drizzle migration drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Generate fresh migration
+        run: npx drizzle-kit generate --name=ci-drift-check
+      - name: Verify no new migration was needed
+        run: |
+          if git diff --quiet drizzle/; then
+            echo "Schema and migrations are in sync."
+          else
+            echo "::error::Schema drift detected. Run 'npm run db:generate' and commit the migration."
+            git diff drizzle/
+            exit 1
+          fi

@@ -1,0 +1,6 @@
+.next
+node_modules
+drizzle
+.aw_docs/features/geolens/design/*.html
+package-lock.json
+*.lock

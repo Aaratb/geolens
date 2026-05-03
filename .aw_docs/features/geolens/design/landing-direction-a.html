@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GEOlens — See how AI search engines really see your site</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <style>
+    html { font-family: "Inter", ui-sans-serif, system-ui; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+    body {
+      background:
+        radial-gradient(60% 40% at 50% 0%, rgba(124,92,255,0.10), transparent 60%),
+        #0A0A0B;
+      color: #EDEDEF;
+    }
+    .surface {
+      background: #111113;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .input-shell {
+      background: #111113;
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow:
+        0 0 0 1px rgba(124,92,255,0.0),
+        0 24px 60px -20px rgba(124,92,255,0.20),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+      transition: all .25s ease;
+    }
+    .input-shell:focus-within {
+      border-color: rgba(124,92,255,0.55);
+      box-shadow:
+        0 0 0 4px rgba(124,92,255,0.10),
+        0 24px 60px -16px rgba(124,92,255,0.30),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .accent-grad {
+      background: linear-gradient(135deg,#A28BFF, #7C5CFF 60%, #5B3FE5);
+    }
+    .chip {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .lens-mark {
+      background:
+        radial-gradient(circle at 50% 50%, #7C5CFF 0%, #5B3FE5 35%, transparent 70%);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.85);
+    }
+    .lens-dot {
+      background: #fff;
+      box-shadow: 0 0 12px rgba(255,255,255,0.7);
+    }
+    .compare-tick { color: #3CCB7F; }
+    .compare-cross { color: #6B6B72; }
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+      background-size: 200% 100%;
+      animation: shimmer 1.6s linear infinite;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .glow-ring {
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.06),
+        0 0 0 1px rgba(124,92,255,0.0),
+        0 24px 60px -24px rgba(124,92,255,0.4);
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased">
+
+  <!-- top nav -->
+  <header class="max-w-6xl mx-auto px-6 pt-6 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <span class="lens-mark w-6 h-6 rounded-full grid place-items-center">
+        <span class="lens-dot w-1.5 h-1.5 rounded-full"></span>
+      </span>
+      <span class="text-[15px] font-semibold tracking-tight">GEOlens</span>
+      <span class="ml-2 mono text-[11px] uppercase tracking-[0.18em] text-neutral-500">beta</span>
+    </div>
+    <nav class="hidden md:flex items-center gap-7 text-sm text-neutral-400">
+      <a class="hover:text-white" href="#">How it works</a>
+      <a class="hover:text-white" href="#">Methodology</a>
+      <a class="hover:text-white" href="#">Pricing</a>
+      <a class="surface px-3.5 py-1.5 rounded-md text-white text-[13px]" href="#">Sign in</a>
+    </nav>
+  </header>
+
+  <!-- hero -->
+  <main class="max-w-3xl mx-auto px-6 pt-20 pb-16 text-center">
+    <div class="inline-flex items-center gap-2 chip rounded-full px-3 py-1 text-[12px] text-neutral-300 mb-7">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+      Now probing 4 AI engines + Lighthouse SEO
+    </div>
+
+    <h1 class="text-[44px] md:text-[56px] leading-[1.05] font-semibold tracking-tight">
+      See how AI search engines<br />
+      <span class="bg-clip-text text-transparent accent-grad">really see your site.</span>
+    </h1>
+
+    <p class="mt-5 text-[17px] text-neutral-400 max-w-xl mx-auto">
+      Paste any URL. We run a full Lighthouse SEO audit and probe ChatGPT, Claude, Perplexity, and Gemini to
+      show exactly where you're invisible — and the three things to fix first.
+    </p>
+
+    <!-- input -->
+    <form class="input-shell mt-10 rounded-2xl flex items-center gap-3 p-2 pl-5">
+      <span class="text-neutral-500 text-sm hidden sm:block mono">https://</span>
+      <input
+        type="text"
+        placeholder="yourbrand.com"
+        class="flex-1 bg-transparent outline-none text-[17px] py-3 placeholder:text-neutral-500"
+      />
+      <button class="accent-grad text-white rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-2">
+        Run review
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </button>
+    </form>
+
+    <!-- chips row -->
+    <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-[12px] text-neutral-400">
+      <span class="chip rounded-full px-2.5 py-1">Lighthouse SEO</span>
+      <span class="chip rounded-full px-2.5 py-1">ChatGPT</span>
+      <span class="chip rounded-full px-2.5 py-1">Claude</span>
+      <span class="chip rounded-full px-2.5 py-1">Perplexity</span>
+      <span class="chip rounded-full px-2.5 py-1">Gemini</span>
+      <span class="chip rounded-full px-2.5 py-1">llms.txt + schema</span>
+    </div>
+
+    <p class="mt-6 text-[12px] text-neutral-500">
+      Free executive summary, no signup. Full report unlocks with sign-in.
+    </p>
+  </main>
+
+  <!-- live preview tile (skeleton) -->
+  <section class="max-w-3xl mx-auto px-6">
+    <div class="surface rounded-2xl p-6 glow-ring">
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-2 mono text-[12px] text-neutral-400">
+          <span class="w-2 h-2 rounded-full bg-violet-400"></span>
+          Sample report — vercel.com
+        </div>
+        <span class="mono text-[11px] uppercase tracking-[0.18em] text-neutral-500">streaming</span>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 mb-6">
+        <div class="surface rounded-xl p-4">
+          <div class="text-[11px] text-neutral-400 uppercase tracking-wider mono">SEO score</div>
+          <div class="mt-2 mono text-3xl font-semibold">94</div>
+          <div class="text-[11px] text-emerald-400 mt-1">strong</div>
+        </div>
+        <div class="surface rounded-xl p-4">
+          <div class="text-[11px] text-neutral-400 uppercase tracking-wider mono">AEO score</div>
+          <div class="mt-2 mono text-3xl font-semibold">71</div>
+          <div class="text-[11px] text-amber-400 mt-1">improving</div>
+        </div>
+        <div class="surface rounded-xl p-4">
+          <div class="text-[11px] text-neutral-400 uppercase tracking-wider mono">Citation rate</div>
+          <div class="mt-2 mono text-3xl font-semibold">58%</div>
+          <div class="text-[11px] text-neutral-400 mt-1">across 4 engines</div>
+        </div>
+      </div>
+
+      <!-- top 3 gaps -->
+      <div class="mb-3 flex items-center gap-2">
+        <span class="mono text-[11px] uppercase tracking-[0.18em] text-neutral-400">Top 3 gaps</span>
+        <span class="flex-1 h-px bg-white/5"></span>
+      </div>
+
+      <div class="space-y-2">
+        <div class="surface rounded-xl p-4 flex items-start gap-4">
+          <span class="mono text-[11px] text-neutral-500 mt-0.5">#GL-01</span>
+          <div class="flex-1">
+            <div class="text-sm font-medium">No <span class="mono text-violet-300">llms.txt</span> at the root</div>
+            <div class="text-[13px] text-neutral-400 mt-1">AI crawlers can't find a curated map of your site. Highest-leverage 30-min fix.</div>
+          </div>
+          <button class="text-[12px] text-violet-300 hover:text-white whitespace-nowrap">Fix with our agent →</button>
+        </div>
+        <div class="surface rounded-xl p-4 flex items-start gap-4">
+          <span class="mono text-[11px] text-neutral-500 mt-0.5">#GL-02</span>
+          <div class="flex-1">
+            <div class="text-sm font-medium">Brand cited 0/3 times by Perplexity</div>
+            <div class="text-[13px] text-neutral-400 mt-1">Strong placement on ChatGPT &amp; Claude, but Perplexity skips your domain in category queries.</div>
+          </div>
+          <button class="text-[12px] text-violet-300 hover:text-white whitespace-nowrap">Fix with our agent →</button>
+        </div>
+        <div class="surface rounded-xl p-4 flex items-start gap-4">
+          <span class="mono text-[11px] text-neutral-500 mt-0.5">#GL-03</span>
+          <div class="flex-1">
+            <div class="text-sm font-medium">Schema.org coverage is thin (Organization only)</div>
+            <div class="text-[13px] text-neutral-400 mt-1">Add Article + FAQPage + Product to lift extractability by ~14 pts.</div>
+          </div>
+          <button class="text-[12px] text-violet-300 hover:text-white whitespace-nowrap">Fix with our agent →</button>
+        </div>
+      </div>
+
+      <!-- locked sections -->
+      <div class="relative mt-6">
+        <div class="space-y-2 opacity-50 pointer-events-none">
+          <div class="skeleton h-12 rounded-lg"></div>
+          <div class="skeleton h-12 rounded-lg"></div>
+          <div class="skeleton h-12 rounded-lg"></div>
+        </div>
+        <div class="absolute inset-0 grid place-items-center">
+          <button class="surface rounded-xl px-4 py-2.5 text-[13px] flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            Sign in to unlock the full report
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- comparison row -->
+  <section class="max-w-3xl mx-auto px-6 mt-16 mb-24">
+    <div class="text-center mb-6">
+      <div class="mono text-[11px] uppercase tracking-[0.18em] text-neutral-500">vs the dashboard tools</div>
+      <h2 class="mt-2 text-[22px] font-semibold tracking-tight">Free, full-stack, gap-first.</h2>
+    </div>
+    <div class="surface rounded-2xl overflow-hidden">
+      <div class="grid grid-cols-5 px-5 py-3 text-[12px] text-neutral-400 border-b border-white/5">
+        <div>Tool</div>
+        <div class="text-center">SEO + AEO</div>
+        <div class="text-center">Free tier</div>
+        <div class="text-center">Streaming</div>
+        <div class="text-center">Action-first</div>
+      </div>
+      <div class="grid grid-cols-5 px-5 py-3 text-sm items-center border-b border-white/5">
+        <div class="font-medium">GEOlens</div>
+        <div class="text-center compare-tick">✓</div>
+        <div class="text-center compare-tick">✓</div>
+        <div class="text-center compare-tick">✓</div>
+        <div class="text-center compare-tick">✓</div>
+      </div>
+      <div class="grid grid-cols-5 px-5 py-3 text-sm items-center border-b border-white/5 text-neutral-300">
+        <div>Profound</div>
+        <div class="text-center compare-cross">—</div>
+        <div class="text-center compare-cross">—</div>
+        <div class="text-center compare-cross">—</div>
+        <div class="text-center compare-tick">✓</div>
+      </div>
+      <div class="grid grid-cols-5 px-5 py-3 text-sm items-center border-b border-white/5 text-neutral-300">
+        <div>Ahrefs Brand Radar</div>
+        <div class="text-center compare-cross">—</div>
+        <div class="text-center compare-cross">—</div>
+        <div class="text-center compare-cross">—</div>
+        <div class="text-center compare-cross">—</div>
+      </div>
+      <div class="grid grid-cols-5 px-5 py-3 text-sm items-center text-neutral-300">
+        <div>HubSpot AEO Grader</div>
+        <div class="text-center compare-cross">—</div>
+        <div class="text-center compare-tick">✓</div>
+        <div class="text-center compare-cross">—</div>
+        <div class="text-center compare-cross">—</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- footer -->
+  <footer class="max-w-6xl mx-auto px-6 py-8 border-t border-white/5 text-[12px] text-neutral-500 flex items-center justify-between">
+    <div>© 2026 GEOlens</div>
+    <div class="flex items-center gap-5">
+      <a href="#" class="hover:text-neutral-300">Methodology</a>
+      <a href="#" class="hover:text-neutral-300">Privacy</a>
+      <a href="#" class="hover:text-neutral-300">Terms</a>
+    </div>
+  </footer>
+
+</body>
+</html>

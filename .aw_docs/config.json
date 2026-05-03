@@ -1,0 +1,13 @@
+{
+  "sync": {
+    "eager": true,
+    "batch_threshold": 10,
+    "mcp_memory_enabled": true
+  },
+  "paths": {
+    "runs": ".aw_docs/runs",
+    "learnings": ".aw_docs/learnings",
+    "tasks": ".aw_docs/tasks",
+    "cache": ".aw_docs/cache"
+  }
+}

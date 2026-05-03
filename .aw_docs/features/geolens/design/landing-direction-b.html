@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GEOlens — Direction B (Beam)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <style>
+    html { font-family: "Inter", ui-sans-serif, system-ui; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+    body {
+      background:
+        radial-gradient(50% 60% at 50% -10%, rgba(91,226,255,0.20), transparent 70%),
+        radial-gradient(40% 60% at 50% 120%, rgba(255,111,181,0.10), transparent 70%),
+        linear-gradient(180deg, #050810, #0E1530);
+      color: #ECEEF7;
+      min-height: 100vh;
+    }
+    .ring-grad {
+      background: conic-gradient(from 200deg, #5BE2FF, #7C5CFF, #FF6FB5, #5BE2FF);
+      -webkit-mask:
+        linear-gradient(#000,#000) content-box,
+        linear-gradient(#000,#000);
+      -webkit-mask-composite: xor;
+              mask-composite: exclude;
+      padding: 2px;
+    }
+    .composer {
+      background: rgba(15,18,32,0.7);
+      border: 1px solid rgba(123,165,255,0.15);
+      backdrop-filter: blur(14px);
+    }
+    .cta-grad {
+      background: linear-gradient(135deg, #5BE2FF, #7C5CFF);
+      box-shadow:
+        0 12px 40px -10px rgba(124,92,255,0.55),
+        0 0 0 1px rgba(255,255,255,0.08) inset;
+    }
+    .beam {
+      background: linear-gradient(180deg, transparent, rgba(91,226,255,0.10), transparent);
+      mask: linear-gradient(180deg, transparent, #000 30%, #000 70%, transparent);
+      animation: beam 6s ease-in-out infinite;
+    }
+    @keyframes beam {
+      0%,100% { opacity:.45; transform:translateY(-10px) }
+      50%     { opacity:.85; transform:translateY(10px) }
+    }
+    .ring-stat {
+      --p: 71;
+      width: 96px; height: 96px; border-radius: 50%;
+      background:
+        conic-gradient(from -90deg, #5BE2FF 0%, #7C5CFF calc(var(--p)*1%), rgba(255,255,255,0.08) calc(var(--p)*1%));
+      display: grid; place-items: center;
+    }
+    .ring-stat::before {
+      content: "";
+      position: absolute;
+    }
+    .engine-pulse {
+      position: relative;
+    }
+    .engine-pulse::after {
+      content:""; position:absolute; inset:-4px; border-radius:9999px;
+      background: radial-gradient(circle, rgba(91,226,255,0.35), transparent 60%);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:.0 }
+      50%     { opacity:.6 }
+    }
+  </style>
+</head>
+<body class="antialiased relative overflow-x-hidden">
+
+  <!-- vertical beam -->
+  <div class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1px] beam"></div>
+
+  <!-- nav -->
+  <header class="relative max-w-6xl mx-auto px-6 pt-6 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <div class="ring-grad w-7 h-7 rounded-full">
+        <div class="w-full h-full rounded-full bg-[#0A0F1F] grid place-items-center">
+          <span class="w-1.5 h-1.5 rounded-full bg-cyan-300"></span>
+        </div>
+      </div>
+      <span class="text-[15px] font-semibold tracking-tight">GEOlens</span>
+    </div>
+    <nav class="flex items-center gap-7 text-sm text-neutral-300">
+      <a class="hover:text-white" href="#">Methodology</a>
+      <a class="hover:text-white" href="#">Pricing</a>
+      <a class="composer rounded-md px-3.5 py-1.5 text-white text-[13px]" href="#">Sign in</a>
+    </nav>
+  </header>
+
+  <!-- hero -->
+  <main class="relative max-w-3xl mx-auto px-6 pt-20 pb-12 text-center">
+    <h1 class="text-[44px] md:text-[60px] leading-[1.05] font-semibold tracking-tight">
+      Show me what AI<br/>says about my site.
+    </h1>
+    <p class="mt-5 text-[17px] text-neutral-300/90 max-w-xl mx-auto">
+      One URL. Four AI engines. A full Lighthouse audit. Streaming review in 60 seconds.
+    </p>
+
+    <!-- composer -->
+    <div class="ring-grad mt-10 rounded-2xl">
+      <form class="composer rounded-2xl flex items-center gap-3 p-2 pl-5">
+        <span class="text-cyan-300/70 text-sm hidden sm:block mono">https://</span>
+        <input
+          type="text"
+          placeholder="yourbrand.com"
+          class="flex-1 bg-transparent outline-none text-[17px] py-3 placeholder:text-neutral-400"
+        />
+        <button class="cta-grad text-white rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-2">
+          Run review
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- engine row -->
+    <div class="mt-7 flex items-center justify-center gap-5 text-[12px] text-neutral-300">
+      <div class="engine-pulse flex items-center gap-2">
+        <span class="w-7 h-7 rounded-full bg-emerald-400/20 grid place-items-center font-semibold">G</span>
+        <span>ChatGPT</span>
+      </div>
+      <div class="engine-pulse flex items-center gap-2">
+        <span class="w-7 h-7 rounded-full bg-orange-300/20 grid place-items-center font-semibold">C</span>
+        <span>Claude</span>
+      </div>
+      <div class="engine-pulse flex items-center gap-2">
+        <span class="w-7 h-7 rounded-full bg-cyan-300/20 grid place-items-center font-semibold">P</span>
+        <span>Perplexity</span>
+      </div>
+      <div class="engine-pulse flex items-center gap-2">
+        <span class="w-7 h-7 rounded-full bg-blue-300/20 grid place-items-center font-semibold">G</span>
+        <span>Gemini</span>
+      </div>
+    </div>
+
+    <p class="mt-5 text-[12px] text-neutral-400">Free executive summary. Sign in for the full report.</p>
+  </main>
+
+  <!-- score rings sample -->
+  <section class="relative max-w-3xl mx-auto px-6">
+    <div class="composer rounded-2xl p-6">
+      <div class="mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-2 mono text-[12px] text-neutral-300">
+          <span class="w-2 h-2 rounded-full bg-cyan-300"></span>
+          Sample report — vercel.com
+        </div>
+        <span class="mono text-[11px] uppercase tracking-[0.18em] text-cyan-200/70">streaming</span>
+      </div>
+      <div class="grid grid-cols-3 gap-4 place-items-center">
+        <div class="text-center">
+          <div class="ring-stat relative" style="--p:94"><span class="mono text-2xl font-semibold">94</span></div>
+          <div class="mt-2 text-[12px] text-neutral-300">SEO</div>
+        </div>
+        <div class="text-center">
+          <div class="ring-stat relative" style="--p:71"><span class="mono text-2xl font-semibold">71</span></div>
+          <div class="mt-2 text-[12px] text-neutral-300">AEO</div>
+        </div>
+        <div class="text-center">
+          <div class="ring-stat relative" style="--p:58"><span class="mono text-2xl font-semibold">58%</span></div>
+          <div class="mt-2 text-[12px] text-neutral-300">Citation rate</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <p class="text-center text-[11px] text-neutral-500 mt-12 mb-12">
+    Direction B preview — gradient/beam aesthetic. Compare against Direction A &amp; C.
+  </p>
+</body>
+</html>

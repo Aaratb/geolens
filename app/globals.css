@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+/* GEOlens design tokens
+ * Locked Phase 4: Hybrid C+A — light editorial landing + dark interactive report.
+ * Two surfaces, two moods. Tokens swap at the surface boundary.
+ */
+
+@theme {
+  /* Type system */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Fraunces", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  /* Shared score colors (used in both surfaces) */
+  --color-score-good: #157f4d;
+  --color-score-good-dark: #3ccb7f;
+  --color-score-warn: #b5760f;
+  --color-score-warn-dark: #f5a524;
+  --color-score-bad: #a8334a;
+  --color-score-bad-dark: #f25555;
+
+  /* Brand accent (used very sparingly, only on report) */
+  --color-accent: #7c5cff;
+  --color-accent-soft: #a28bff;
+  --color-accent-deep: #5b3fe5;
+}
+
+/* Surface 1 — Landing & marketing (light editorial, Direction C) */
+:root {
+  --bg: #fafaf7;
+  --ink: #16161a;
+  --marginalia: #56565c;
+  --rule: rgba(0, 0, 0, 0.1);
+  --surface: #ffffff;
+  --surface-muted: #f3f3ee;
+}
+
+/* Surface 2 — Live report (dark interactive, Direction A)
+ * Applied via .surface-report on a wrapper, OR via .dark on <html> for
+ * full route override (e.g. /scan/[id]). next-themes flips the class.
+ */
+.dark,
+.surface-report {
+  --bg: #0a0a0b;
+  --ink: #ededef;
+  --marginalia: #8c8c92;
+  --rule: rgba(255, 255, 255, 0.08);
+  --surface: #111113;
+  --surface-muted: #16161a;
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    transition:
+      background-color 400ms ease,
+      color 400ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body {
+      transition: none;
+    }
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: #ffffff;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-serif);
+    font-feature-settings: "ss01", "ss02";
+    font-optical-sizing: auto;
+  }
+  .font-mono-tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .small-caps {
+    font-feature-settings: "smcp" 1, "c2sc" 1;
+    letter-spacing: 0.08em;
+  }
+  .marginalia {
+    color: var(--marginalia);
+  }
+  .surface {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+  }
+  .rule-t {
+    border-top: 1px solid var(--rule);
+  }
+  .rule-b {
+    border-bottom: 1px solid var(--rule);
+  }
+}
