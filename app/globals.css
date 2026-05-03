@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Restrict Tailwind v4 auto-detection to our actual source dirs so the .aw
+ * workspace symlink (pointing outside the project root) doesn't break builds. */
+@source "../app/**/*.{ts,tsx,mdx}";
+@source "../lib/**/*.{ts,tsx}";
+
 /* GEOlens design tokens
  * Locked Phase 4: Hybrid C+A — light editorial landing + dark interactive report.
  * Two surfaces, two moods. Tokens swap at the surface boundary.

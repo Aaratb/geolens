@@ -47,7 +47,8 @@ next-env.d.ts
 # drizzle (migrations are checked in; drop only the drizzle metadata)
 drizzle/meta/_journal.json.swp
 
-# AW workspace caches
+# AW workspace
+.aw
 .aw_docs/cache
 .aw_docs/runs
 .env*.local
