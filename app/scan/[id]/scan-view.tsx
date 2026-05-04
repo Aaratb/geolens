@@ -75,14 +75,14 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
         ) : (
           <div className="space-y-2">
             {state.topThree.map((g) => (
-              <GapCard key={g.id} gap={g} />
+              <GapCard key={g.id} gap={g} scanId={scanId} />
             ))}
           </div>
         )}
       </section>
 
       {/* sign-in gated drill-down sections */}
-      <DrillDown state={state} locked={showSignInWall} />
+      <DrillDown state={state} locked={showSignInWall} scanId={scanId} />
 
       {state.status === "complete" && state.durationMs !== null ? (
         <div className="rule-t pt-6 marginalia text-[12px] flex items-center justify-between gap-4">
@@ -149,9 +149,11 @@ function EditorialHeader({ eyebrow, title }: { eyebrow: string; title: string })
 function DrillDown({
   state,
   locked,
+  scanId,
 }: {
   state: ReturnType<typeof useScanStream>;
   locked: boolean;
+  scanId: string;
 }) {
   return (
     <section className="relative">
@@ -159,7 +161,14 @@ function DrillDown({
         eyebrow="Findings · Drill-down"
         title="The full audit, in detail."
       />
-      <div className={locked ? "pointer-events-none select-none filter blur-md" : ""}>
+      {/* `inert` blocks Tab/focus on locked content; CSS pointer-events-none
+          alone is keyboard-bypassable. (Phase 7 review: CR-H-3) */}
+      <div
+        className={locked ? "pointer-events-none select-none filter blur-md" : ""}
+        // React 19 types `inert` as boolean; pass true when locked.
+        inert={locked || undefined}
+        aria-hidden={locked || undefined}
+      >
         {state.allGaps.length <= 3 ? (
           <div className="grid gap-2">
             <Skeleton className="h-20" />
@@ -169,7 +178,7 @@ function DrillDown({
         ) : (
           <div className="space-y-2">
             {state.allGaps.slice(3).map((g) => (
-              <GapCard key={g.id} gap={g} />
+              <GapCard key={g.id} gap={g} scanId={scanId} />
             ))}
           </div>
         )}

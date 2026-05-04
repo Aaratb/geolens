@@ -41,13 +41,18 @@ export async function checkDailyBudget(now: Date = new Date()): Promise<BudgetCh
   try {
     const v = await redis().get<number>(DAILY_KEY(day));
     spent = typeof v === "number" ? v : 0;
-  } catch {
-    // Redis hiccup is not a reason to block scans — fail open with a warning
+  } catch (err) {
+    // Phase 7 review: S-HIGH-2.
+    // FAIL CLOSED. A wrongly-allowed scan costs real money against upstream
+    // LLM API balances; a wrongly-denied scan costs UX. The budget guard is
+    // the last line of defense against a single Upstash outage draining the
+    // entire daily budget unprotected.
+    console.warn("[budget] Upstash unreachable, failing closed", err);
     return {
-      allowed: true,
+      allowed: false,
       spentCentsToday: 0,
       dailyCeilingCents: DAILY_BUDGET_CENTS,
-      reason: "redis-unreachable",
+      reason: "redis-unreachable-failing-closed",
     };
   }
   return {

@@ -16,7 +16,11 @@ const fraunces = Fraunces({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-serif",
-  axes: ["opsz"],
+  // Phase 7 review PERF-H-1: restricting to the single weight actually used
+  // by the codebase (`font-semibold` = 600) trims ~150-200 KB off the wire.
+  // axes: ["opsz"] is omitted so we ship the static-instance subset, which
+  // is meaningfully smaller than the full variable font.
+  weight: ["600"],
 });
 
 const jetbrains = JetBrains_Mono({

@@ -113,6 +113,12 @@ function reducer(state: ScanStreamState, ev: ScanEvent): ScanStreamState {
       return { ...state, status: "complete", durationMs: ev.durationMs, costCents: ev.costCents };
     case "scan.failed":
       return { ...state, status: "failed", failure: { stage: ev.stage, reason: ev.reason } };
+    case "scan.timeout":
+      return {
+        ...state,
+        status: "failed",
+        failure: { stage: "stream", reason: ev.reason },
+      };
     case "budget.tripped":
       return { ...state, banner: ev.banner };
     default:
@@ -160,6 +166,7 @@ export function useScanStream(scanId: string | null): ScanStreamState {
       "gaps.ranked",
       "scan.completed",
       "scan.failed",
+      "scan.timeout",
       "budget.tripped",
     ];
     for (const t of types) es.addEventListener(t, handler as unknown as EventListener);

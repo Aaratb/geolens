@@ -24,9 +24,12 @@ interface RunOptions {
   timeoutMs?: number;
   /**
    * Hook called after each probe completes. Used by the orchestrator to push
-   * SSE events as each engine finishes (vs waiting for all 12).
+   * SSE events as each engine finishes (vs waiting for all 12). May be async;
+   * the runner awaits the returned promise so failures (e.g. sink.publish
+   * dropping) are surfaced rather than silently swallowed.
+   * (Phase 7 review: TS-H-1)
    */
-  onProbeComplete?: (probe: ProbeResult) => void;
+  onProbeComplete?: (probe: ProbeResult) => void | Promise<void>;
   /**
    * Test override: replace generateText with a stub. When provided, no real
    * API calls are made.
@@ -51,11 +54,16 @@ export async function runAeoProbes(opts: RunOptions): Promise<ProbeResult[]> {
   const modelMap: Record<Engine, string> = { ...DEFAULT_MODEL_PER_ENGINE, ...opts.modelMap };
   const generator = opts.generator ?? defaultGenerator;
 
-  const tasks: Promise<ProbeResult>[] = [];
+  // Each task carries its own (engine, probeKind) so the error path can read
+  // them from the closure rather than reconstructing via index arithmetic.
+  // (Phase 7 review: TS-H-3)
+  const tasks: { engine: Engine; probeKind: ProbeKind; promise: Promise<ProbeResult> }[] = [];
   for (const engine of ENGINES) {
     for (const probeKind of PROBE_KINDS) {
-      tasks.push(
-        runOneProbe({
+      tasks.push({
+        engine,
+        probeKind,
+        promise: runOneProbe({
           scanId: opts.scanId,
           engine,
           probeKind,
@@ -66,29 +74,29 @@ export async function runAeoProbes(opts: RunOptions): Promise<ProbeResult[]> {
           parser: opts.parser,
           onComplete: opts.onProbeComplete,
         }),
-      );
+      });
     }
   }
 
-  const settled = await Promise.allSettled(tasks);
-  return settled.map((r, i) =>
-    r.status === "fulfilled"
-      ? r.value
-      : ({
-          scanId: opts.scanId,
-          engine: ENGINES[Math.floor(i / PROBE_KINDS.length)] as Engine,
-          probeKind: PROBE_KINDS[i % PROBE_KINDS.length] as ProbeKind,
-          prompt: "",
-          response: null,
-          parsed: null,
-          baseScore: 0,
-          weightedScore: 0,
-          latencyMs: 0,
-          costCents: 0,
-          status: "errored",
-          error: r.reason instanceof Error ? r.reason.message : String(r.reason),
-        } satisfies ProbeResult),
-  );
+  const settled = await Promise.allSettled(tasks.map((t) => t.promise));
+  return settled.map((r, i) => {
+    if (r.status === "fulfilled") return r.value;
+    const t = tasks[i]!;
+    return {
+      scanId: opts.scanId,
+      engine: t.engine,
+      probeKind: t.probeKind,
+      prompt: "",
+      response: null,
+      parsed: null,
+      baseScore: 0,
+      weightedScore: 0,
+      latencyMs: 0,
+      costCents: 0,
+      status: "errored",
+      error: r.reason instanceof Error ? r.reason.message : String(r.reason),
+    } satisfies ProbeResult;
+  });
 }
 
 interface RunOneOpts {
@@ -100,7 +108,7 @@ interface RunOneOpts {
   timeoutMs: number;
   generator: (args: GeneratorArgs) => Promise<{ text: string; usage: { tokens: number } }>;
   parser?: Parameters<typeof parseProbeResponse>[0]["parser"];
-  onComplete?: (probe: ProbeResult) => void;
+  onComplete?: (probe: ProbeResult) => void | Promise<void>;
 }
 
 async function runOneProbe(opts: RunOneOpts): Promise<ProbeResult> {
@@ -155,7 +163,9 @@ async function runOneProbe(opts: RunOneOpts): Promise<ProbeResult> {
     };
   }
 
-  opts.onComplete?.(result);
+  // Await so async sinks (Postgres event publish in production) can fail
+  // loudly instead of silently dropping events. (Phase 7 review: TS-H-1)
+  await opts.onComplete?.(result);
   return result;
 }
 

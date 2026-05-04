@@ -82,7 +82,9 @@ describe("runAeoProbes", () => {
     await runAeoProbes({
       scanId: "test-4",
       ctx,
-      onProbeComplete: (p) => seen.push(`${p.engine}:${p.probeKind}`),
+      onProbeComplete: (p) => {
+        seen.push(`${p.engine}:${p.probeKind}`);
+      },
       generator: async () => ({ text: "Acme Corp is a CRM.", usage: { tokens: 100 } }),
       parser: async ({ ctx: c, responseText }) => heuristicParser(c, responseText),
     });

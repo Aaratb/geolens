@@ -4,6 +4,7 @@
  * Privacy lock from PRD §13: scan_pages_crawled.signals stores ONLY computed
  * metrics. Raw HTML must never land in this table.
  */
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -157,18 +158,25 @@ export const scanPagesCrawled = pgTable(
   (t) => [index("pages_scan_idx").on(t.scanId)],
 );
 
-export const shareTokens = pgTable("share_tokens", {
-  token: text("token").primaryKey(),
-  scanId: uuid("scan_id")
-    .notNull()
-    .references(() => scans.id, { onDelete: "cascade" }),
-  createdBy: text("created_by")
-    .notNull()
-    .references(() => users.id),
-  expiresAt: timestamp("expires_at", { withTimezone: true }),
-  views: integer("views").default(0).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-});
+export const shareTokens = pgTable(
+  "share_tokens",
+  {
+    token: text("token").primaryKey(),
+    scanId: uuid("scan_id")
+      .notNull()
+      .references(() => scans.id, { onDelete: "cascade" }),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => users.id),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    views: integer("views").default(0).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("share_tokens_scan_id_idx").on(t.scanId),
+    index("share_tokens_expires_at_idx").on(t.expiresAt),
+  ],
+);
 
 export const waitlistEntries = pgTable(
   "waitlist_entries",
@@ -181,7 +189,17 @@ export const waitlistEntries = pgTable(
     utm: jsonb("utm"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
-  (t) => [uniqueIndex("waitlist_email_gap_uq").on(t.email, t.gapId)],
+  (t) => [
+    uniqueIndex("waitlist_email_gap_uq").on(t.email, t.gapId),
+    // Phase 7 review DB-H-1: gap_id IS NULL signups need their own
+    // partial unique index because UNIQUE(email, gap_id) treats NULLs as
+    // distinct.
+    uniqueIndex("waitlist_email_general_uq")
+      .on(t.email)
+      .where(sql`${t.gapId} IS NULL`),
+    index("waitlist_scan_id_idx").on(t.scanId),
+    index("waitlist_gap_id_idx").on(t.gapId),
+  ],
 );
 
 export const events = pgTable(

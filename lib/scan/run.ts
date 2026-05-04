@@ -153,8 +153,6 @@ export async function runScan(input: RunScanInput): Promise<RunScanOutput> {
   // 4. PSI on every page (parallel)
   await setScanRunning(input.scanId, "psi", input.db);
   const psiSettled = await Promise.allSettled(allPages.map((p) => psi({ url: p.url })));
-  const psiResults: { url: string; weightedSeo: number; failures: ReturnType<typeof psiSettled[number] extends { value: infer V } ? () => V : never> | unknown }[] = [];
-  // unwrap with simpler explicit typing
   const usablePsi = psiSettled.flatMap((r, i) =>
     r.status === "fulfilled" ? [{ page: allPages[i]!, result: r.value }] : [],
   );
@@ -165,9 +163,7 @@ export async function runScan(input: RunScanInput): Promise<RunScanOutput> {
       scores: u.result.scores,
       weightedSeo: u.result.weightedSeo,
     });
-    psiResults.push({ url: u.page.url, weightedSeo: u.result.weightedSeo, failures: u.result.failures });
   }
-  void psiResults;
   // Aggregate SEO score = average of weighted SEO scores across pages
   const overallSeo =
     usablePsi.length === 0
@@ -196,6 +192,15 @@ export async function runScan(input: RunScanInput): Promise<RunScanOutput> {
   if (skipEngines) {
     enginesSkipped = 4;
   } else {
+    // Emit one aeo.probe.started for each (engine, probeKind) pair so the
+    // streaming UI's progress trail can show pending dots before completion.
+    // (Phase 7 review: CR-H-2)
+    for (const engine of ["openai", "anthropic", "perplexity", "gemini"] as const) {
+      for (const probeKind of ["brand_recall", "category_placement", "citation_behavior"] as const) {
+        await sink.publish({ type: "aeo.probe.started", engine, probeKind });
+      }
+    }
+
     let projectedCents = 0;
     probeResults = await probes({
       scanId: input.scanId,

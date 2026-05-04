@@ -51,6 +51,7 @@ export type ScanEvent =
       enginesSkipped: number;
     }
   | { type: "scan.failed"; stage: string; reason: string }
+  | { type: "scan.timeout"; reason: string }
   | { type: "budget.tripped"; reason: "daily" | "per-scan"; banner: string };
 
 export type ScanEventType = ScanEvent["type"];

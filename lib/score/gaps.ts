@@ -144,17 +144,21 @@ function priorityFor(
   return scoreImpact * SEVERITY_WEIGHT[severity] * fix;
 }
 
-function mapHygieneCategory(c: HygieneCheck["category"]): FindingCategory {
-  // The DB enum uses "hygiene" for the AEO hygiene umbrella; "engine" for probe-derived;
-  // "citability" for content-shape; "seo" for PSI. Hygiene categories all map to "hygiene".
+/**
+ * The DB FindingCategory enum collapses the 6 HygieneCategory variants into
+ * a single "hygiene" bucket (engine probes and SEO failures get their own).
+ * Excluding "llms-txt" from the param type because the caller already
+ * special-cases it; the remaining variants must all map to "hygiene". A new
+ * HygieneCategory variant added in the future will surface here as a TS
+ * error rather than silently mis-mapping. (Phase 7 review: TS-H-4)
+ */
+function mapHygieneCategory(c: Exclude<HygieneCheck["category"], "llms-txt">): FindingCategory {
   switch (c) {
     case "robots-ai":
     case "jsonld":
     case "meta":
     case "headings":
     case "semantic":
-      return "hygiene";
-    default:
       return "hygiene";
   }
 }

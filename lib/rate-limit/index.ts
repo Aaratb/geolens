@@ -10,7 +10,18 @@ import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
 import { createHash } from "node:crypto";
 
-const SALT = process.env.IP_HASH_SALT ?? "dev-salt-rotate-yearly";
+/**
+ * IP_HASH_SALT must be set in any non-development environment. The fallback
+ * is a known constant — if it ever runs in production, every stored ip_hash
+ * becomes reversible via a precomputed table.
+ *
+ * Phase 7 review: S-HIGH-1.
+ */
+const RAW_SALT = process.env.IP_HASH_SALT;
+if (!RAW_SALT && process.env.NODE_ENV === "production") {
+  throw new Error("IP_HASH_SALT must be set in production");
+}
+const SALT = RAW_SALT ?? "local-dev-only-not-for-production";
 
 let _redis: Redis | null = null;
 function redis(): Redis {
@@ -67,16 +78,24 @@ export function hashIp(ip: string): string {
   return createHash("sha256").update(`${SALT}:${ip}`).digest("hex").slice(0, 32);
 }
 
-/** Best-effort IP extraction from common Vercel / proxy headers. */
+/**
+ * Extract the client IP from common edge headers. Header preference matters:
+ * `cf-connecting-ip` is the most authoritative when behind Cloudflare; XFF
+ * leftmost can be spoofed and rightmost is added by the trusted proxy.
+ *
+ * Phase 7 review: S-HIGH-3.
+ */
 export function extractIp(headers: Headers): string {
+  // Most specific to least: trusted proxy -> Vercel/CDN -> XFF rightmost
+  const cf = headers.get("cf-connecting-ip");
+  if (cf) return cf.trim();
+  const real = headers.get("x-real-ip");
+  if (real) return real.trim();
+  const vercel = headers.get("x-vercel-forwarded-for");
+  if (vercel) return vercel.split(",").at(-1)?.trim() ?? "0.0.0.0";
   const xff = headers.get("x-forwarded-for");
-  if (xff) return xff.split(",")[0]?.trim() ?? "0.0.0.0";
-  return (
-    headers.get("x-real-ip") ??
-    headers.get("cf-connecting-ip") ??
-    headers.get("x-vercel-forwarded-for") ??
-    "0.0.0.0"
-  );
+  if (xff) return xff.split(",").at(-1)?.trim() ?? "0.0.0.0";
+  return "0.0.0.0";
 }
 
 export interface LimitResult {
