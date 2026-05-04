@@ -4,6 +4,7 @@
  */
 import robotsParser from "robots-parser";
 import { DEFAULT_USER_AGENT } from "./types";
+import { selfFetchHeaders } from "./fetch-helpers";
 
 export interface RobotsCheck {
   /** robots.txt body, or null if missing/unreachable. */
@@ -25,7 +26,10 @@ export async function fetchRobots(
     try {
       const res = await fetcher(robotsUrl, {
         method: "GET",
-        headers: { "user-agent": userAgent },
+        headers: {
+          "user-agent": userAgent,
+          ...selfFetchHeaders(robotsUrl),
+        },
         signal: controller.signal,
         redirect: "follow",
       });

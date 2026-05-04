@@ -10,6 +10,7 @@
  */
 import type { HygieneCheck } from "../types";
 import { DEFAULT_USER_AGENT } from "../../crawl/types";
+import { selfFetchHeaders } from "../../crawl/fetch-helpers";
 
 interface CheckOptions {
   homepage: string;
@@ -102,7 +103,11 @@ async function fetchText(
     const timer = setTimeout(() => controller.abort(), 5_000);
     try {
       const res = await fetcher(url, {
-        headers: { "user-agent": userAgent, accept: "text/plain,text/markdown" },
+        headers: {
+          "user-agent": userAgent,
+          accept: "text/plain,text/markdown",
+          ...selfFetchHeaders(url),
+        },
         signal: controller.signal,
       });
       if (!res.ok) return { ok: false, status: res.status };

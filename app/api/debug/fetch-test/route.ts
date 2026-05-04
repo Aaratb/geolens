@@ -62,10 +62,27 @@ export async function GET() {
 
   // Direct fetches with the same UA the crawler uses
   probes.push(await probe("self-prod-domain", "https://geolens.xyz/"));
-  probes.push(await probe("self-deployment-url",
-    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/` : "https://geolens.xyz/"));
+  probes.push(await probe(
+    "self-deployment-url",
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/` : "https://geolens.xyz/",
+  ));
   probes.push(await probe("control-stripe", "https://stripe.com/"));
   probes.push(await probe("control-vercel", "https://vercel.com/"));
+
+  // Self-fetch with Vercel Protection Bypass header
+  const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  if (bypassSecret) {
+    probes.push(
+      await probe("self-prod-with-bypass", "https://geolens.xyz/", {
+        headers: {
+          "user-agent": "GEOlensBot/1.0 (+https://geolens.xyz/bot)",
+          accept: "text/html,application/xhtml+xml",
+          "x-vercel-protection-bypass": bypassSecret,
+          "x-vercel-set-bypass-cookie": "samesitenone",
+        } as HeadersInit,
+      }),
+    );
+  }
 
   // DNS resolution of self-host
   let dnsRecords: Array<{ family: number; address: string }> = [];
@@ -80,6 +97,8 @@ export async function GET() {
     runtime: "nodejs",
     vercel_url: process.env.VERCEL_URL ?? null,
     vercel_region: process.env.VERCEL_REGION ?? null,
+    bypass_secret_present: !!process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+    bypass_secret_length: process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.length ?? 0,
     dns_geolens_xyz: dnsRecords,
     dns_error: dnsError,
     probes,

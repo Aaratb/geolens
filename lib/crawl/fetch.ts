@@ -4,6 +4,7 @@
  */
 import { load } from "cheerio";
 import { DEFAULT_USER_AGENT, type FetchResult } from "./types";
+import { selfFetchHeaders } from "./fetch-helpers";
 
 interface FetchOptions {
   url: string;
@@ -33,6 +34,7 @@ export async function fetchPage({
         "user-agent": userAgent,
         accept: "text/html,application/xhtml+xml",
         "accept-language": "en-US,en;q=0.9",
+        ...selfFetchHeaders(url),
       },
       redirect: "follow",
       signal: controller.signal,

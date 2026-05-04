@@ -9,6 +9,7 @@
 import type { CheerioAPI } from "cheerio";
 import { dropQueryAndHash, isInternalLink, resolveAgainst } from "./url";
 import { DEFAULT_USER_AGENT } from "./types";
+import { selfFetchHeaders } from "./fetch-helpers";
 
 interface DiscoverOptions {
   homepage: string;
@@ -84,7 +85,11 @@ async function fetchSitemapUrls(
       const timer = setTimeout(() => controller.abort(), 5_000);
       try {
         const res = await fetcher(url, {
-          headers: { "user-agent": userAgent, accept: "application/xml,text/xml" },
+          headers: {
+            "user-agent": userAgent,
+            accept: "application/xml,text/xml",
+            ...selfFetchHeaders(url),
+          },
           signal: controller.signal,
           redirect: "follow",
         });
