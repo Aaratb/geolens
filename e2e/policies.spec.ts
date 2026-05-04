@@ -17,10 +17,11 @@ test("methodology page shows scoring formula", async ({ page }) => {
 test("privacy page is GDPR-compliant", async ({ page }) => {
   await page.goto("/privacy");
   await expect(page.getByRole("heading", { name: /Privacy notice/i })).toBeVisible();
-  await expect(page.getByText(/Lawful basis \(GDPR Art\. 6\)/i)).toBeVisible();
-  await expect(page.getByText(/Your rights/i)).toBeVisible();
-  await expect(page.getByText(/Subprocessors/i)).toBeVisible();
-  await expect(page.getByText(/AI-generated content/i)).toBeVisible();
+  // Use heading roles to avoid strict-mode collisions with body prose.
+  await expect(page.getByRole("heading", { name: /Lawful basis \(GDPR Art\. 6\)/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^Your rights$/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Subprocessors/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /AI-generated content/i })).toBeVisible();
 });
 
 test("terms page renders", async ({ page }) => {
