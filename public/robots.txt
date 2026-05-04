@@ -1,0 +1,46 @@
+# GEOlens — explicit rules for AI and search crawlers.
+# We want broad indexing because GEOlens is a public reviewer tool.
+
+User-agent: *
+Allow: /
+
+# Disallow internal API routes
+Disallow: /api/
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /dashboard
+
+# Major AI crawlers — explicitly allowed.
+User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Disallow: /share/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /api/
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: CCBot
+Allow: /
+Disallow: /api/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+
+# Reserved: GEOlens's own crawler when it's audited.
+User-agent: GEOlensBot
+Allow: /
+
+Sitemap: https://geolens.xyz/sitemap.xml

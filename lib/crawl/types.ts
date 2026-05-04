@@ -67,4 +67,4 @@ export interface CrawlOutput {
   budgetExceeded: boolean;
 }
 
-export const DEFAULT_USER_AGENT = "GEOlensBot/1.0 (+https://geolens.app/bot)";
+export const DEFAULT_USER_AGENT = "GEOlensBot/1.0 (+https://geolens.xyz/bot)";

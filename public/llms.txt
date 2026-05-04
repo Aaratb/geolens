@@ -1,0 +1,28 @@
+# GEOlens
+
+> A second opinion on how AI sees your site. GEOlens audits any public website the way Lighthouse audits performance — but for the AI search era. We probe ChatGPT, Claude, Perplexity, and Gemini, then issue a numbered finding for every gap between how a brand describes itself and how AI describes it.
+
+GEOlens is built for two audiences: marketers/founders who want a clear verdict and plain-English fixes, and SEO/AEO professionals who want raw scores and exportable data. The same report serves both — executive summary on top, technical drill-downs below.
+
+The product is a one-shot reviewer (not continuous monitoring). Every report ships with a numbered findings list (`#GL-NN` format) prioritized by impact, severity, and user-fixability. A future autonomous fixer agent will close the loop on the gaps GEOlens surfaces; readers can join the waitlist from any finding.
+
+## What GEOlens measures
+
+- [SEO score](https://geolens.xyz/methodology): Hosted Lighthouse via Google PageSpeed Insights — Performance 25%, Accessibility 25%, Best Practices 20%, SEO 30%
+- [AEO score](https://geolens.xyz/methodology): 60% Engine Visibility (citation rate + share of voice across ChatGPT, Claude, Perplexity, Gemini) + 25% AEO Hygiene (llms.txt, JSON-LD, semantic HTML, robots.txt for AI crawlers) + 15% Citability (clean-text ratio, paragraph shape, FAQ patterns)
+- [Multipliers](https://geolens.xyz/methodology): Position (primary 1.0 / secondary 0.7 / tertiary 0.4), Sentiment (positive 1.2 / neutral 1.0 / negative 0.5), Accuracy (accurate 1.0 / partial 0.7 / misattributed 0.3) — sourced from market consensus.
+
+## Pages
+
+- [Home](https://geolens.xyz/): Submit a URL, see a live streaming audit
+- [Methodology](https://geolens.xyz/methodology): Full scoring formula, vocabulary glossary, what GEOlens deliberately does not do
+- [Privacy](https://geolens.xyz/privacy): Data handling, raw HTML never persisted
+- [Terms](https://geolens.xyz/terms): Acceptable use, ToS
+
+## What GEOlens explicitly does NOT do
+
+- Live Google AI Overviews probing (deferred — requires SerpAPI-class data)
+- 200M+ search-backed prompt databases (Profound and Ahrefs Brand Radar moat)
+- Continuous monitoring or scheduled rescans (one-shot reviewer for v1)
+- Persist raw HTML beyond a scan's runtime (only computed signals)
+- Competitor comparison with user-supplied competitor lists

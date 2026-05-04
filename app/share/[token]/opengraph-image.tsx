@@ -20,7 +20,7 @@ export default async function OpengraphImage({ params }: { params: { token: stri
   const resolved = await resolveShareToken(params.token);
   const scan = resolved ? await getScanHeader(resolved.scanId) : null;
 
-  const hostname = scan?.hostname ?? "geolens.app";
+  const hostname = scan?.hostname ?? "geolens.xyz";
   const seo = scan?.scoreSeo ?? null;
   const aeo = scan?.scoreAeo ?? null;
   const citation = scan?.citationRatePct ?? null;

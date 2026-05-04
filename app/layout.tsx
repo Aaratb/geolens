@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   description:
     "GEOlens audits your site the way Lighthouse audits its performance — but for the AI search era. Probe ChatGPT, Claude, Perplexity, and Gemini for citation, visibility, and on-page AEO hygiene.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://geolens.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://geolens.xyz"),
   openGraph: {
     type: "website",
     siteName: "GEOlens",

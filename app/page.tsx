@@ -5,9 +5,42 @@
 import Link from "next/link";
 import { SubmitForm } from "./_landing/submit-form";
 
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://geolens.xyz";
+
+const orgJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "GEOlens",
+  url: SITE,
+  logo: `${SITE}/logo.png`,
+  description:
+    "GEOlens audits any public website for AI search era visibility — probes ChatGPT, Claude, Perplexity, and Gemini, plus a full Lighthouse SEO audit.",
+  sameAs: [],
+};
+
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "GEOlens",
+  url: SITE,
+  potentialAction: {
+    "@type": "SearchAction",
+    target: { "@type": "EntryPoint", urlTemplate: `${SITE}/scan/{scan_id}` },
+    "query-input": "required name=scan_id",
+  },
+};
+
 export default function HomePage() {
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
+      />
       <Masthead />
       <main className="max-w-3xl mx-auto px-8 pt-16 pb-24">
         <div className="font-mono-tabular text-[11px] uppercase tracking-[0.22em] marginalia">
