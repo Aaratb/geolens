@@ -5,7 +5,6 @@
 import robotsParser from "robots-parser";
 import { DEFAULT_USER_AGENT } from "./types";
 import { selfFetchHeaders } from "./fetch-helpers";
-import { getSelfSnapshot, isSelfHost } from "./self-snapshot";
 
 export interface RobotsCheck {
   /** robots.txt body, or null if missing/unreachable. */
@@ -19,17 +18,6 @@ export async function fetchRobots(
   userAgent = DEFAULT_USER_AGENT,
   fetcher: typeof fetch = globalThis.fetch,
 ): Promise<RobotsCheck> {
-  // Self-host short-circuit: read our own /public/robots.txt directly.
-  if (isSelfHost(homepage)) {
-    const robotsUrl = new URL("/robots.txt", homepage).toString();
-    const text = getSelfSnapshot(robotsUrl);
-    const parsed = robotsParser(robotsUrl, text);
-    return {
-      text,
-      isAllowed: (target: string) => parsed.isAllowed(target, userAgent) !== false,
-    };
-  }
-
   let text: string | null = null;
   try {
     const robotsUrl = new URL("/robots.txt", homepage).toString();
