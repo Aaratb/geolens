@@ -8,6 +8,13 @@
       "when": 1777849087629,
       "tag": "0000_strong_steel_serpent",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777853725385,
+      "tag": "0001_add_scan_events",
+      "breakpoints": true
     }
   ]
 }

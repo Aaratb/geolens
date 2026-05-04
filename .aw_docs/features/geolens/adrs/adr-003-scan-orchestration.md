@@ -45,9 +45,28 @@ We need to:
 
 ## Decision
 
-**Option B — Spawn-and-detach Route Handler + Redis pub/sub for streaming.**
+**Option B — Spawn-and-detach Route Handler with Postgres-polling event stream.**
 
 We reserve **Option C (Vercel Workflow)** for the v1.5 fixer agent.
+
+### v1 implementation note (added Phase 6 / M2.d)
+
+The original ADR specified Redis pub/sub for the event stream. After the M2.d
+implementation pass, we switched to a `scan_events` table polled by the SSE
+endpoint. Reasons:
+
+1. Upstash Redis is REST-only and doesn't expose blocking subscribe; we'd be
+   polling its API anyway.
+2. Postgres polling is durable by definition — late-joining clients trivially
+   resume from the last seen event id; no separate replay logic.
+3. ~500ms poll latency is imperceptible for the UX (sections appear as each
+   audit completes, not real-time tick-tock).
+4. Removes one piece of infra entirely: events live in the same DB as
+   findings, persisted by the same writer.
+
+Upstash Redis is still used for **rate limiting** (where REST is perfect) and
+the **daily budget counter**. The Redis pub/sub design remains the path-forward
+when scan latencies drop below ~30s.
 
 ## Rationale
 

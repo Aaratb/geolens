@@ -197,6 +197,28 @@ export const events = pgTable(
   (t) => [index("events_event_created_idx").on(t.event, t.createdAt)],
 );
 
+/**
+ * Streaming scan events. One row per emitted event during a scan; consumed by
+ * the SSE endpoint via id-based polling. Cleared when the parent scan is
+ * deleted (cascade). See ADR-003 implementation note: we chose Postgres
+ * polling over Redis pub/sub for v1 because Upstash's REST API doesn't expose
+ * blocking subscribe; revisit if scan latency drops below ~30s.
+ */
+export const scanEvents = pgTable(
+  "scan_events",
+  {
+    id: bigserial("id", { mode: "bigint" }).primaryKey(),
+    scanId: uuid("scan_id")
+      .notNull()
+      .references(() => scans.id, { onDelete: "cascade" }),
+    seq: integer("seq").notNull(),
+    eventType: text("event_type").notNull(),
+    payload: jsonb("payload"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("scan_events_scan_seq_idx").on(t.scanId, t.id)],
+);
+
 /* ---------- type exports for app layer ---------- */
 export type User = typeof users.$inferSelect;
 export type Scan = typeof scans.$inferSelect;
@@ -207,3 +229,5 @@ export type ScanPageCrawled = typeof scanPagesCrawled.$inferSelect;
 export type ShareToken = typeof shareTokens.$inferSelect;
 export type WaitlistEntry = typeof waitlistEntries.$inferSelect;
 export type EventRow = typeof events.$inferSelect;
+export type ScanEventRow = typeof scanEvents.$inferSelect;
+export type NewScanEvent = typeof scanEvents.$inferInsert;
