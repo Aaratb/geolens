@@ -120,13 +120,15 @@ export async function runScan(input: RunScanInput): Promise<RunScanOutput> {
 
   if (!crawlOut.homepage) {
     const err = crawlOut.errors[0]?.error;
-    await sink.publish({
-      type: "scan.failed",
-      stage: "crawl",
-      reason: err ? err.kind : "unknown",
-    });
+    // Surface the underlying network/fetch reason in the failed event so
+    // we don't lose detail (was just "network" before — useless for triage).
+    const detail =
+      err && "message" in err ? err.message : err && "status" in err ? String(err.status) : "";
+    const reason = err ? `${err.kind}${detail ? `: ${detail}` : ""}` : "unknown";
+    console.error(`[scan ${input.scanId}] crawl failed`, err);
+    await sink.publish({ type: "scan.failed", stage: "crawl", reason });
     await setScanFailed(input.scanId, "crawl-failed", input.db);
-    throw new Error(`crawl failed: ${err ? err.kind : "unknown"}`);
+    throw new Error(`crawl failed: ${reason}`);
   }
   const allPages = [crawlOut.homepage, ...crawlOut.internalPages];
   await sink.publish({
