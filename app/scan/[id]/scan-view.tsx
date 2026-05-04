@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScoreTiles } from "./score-tiles";
 import { GapCard } from "./gap-card";
 import { SignInOverlay } from "./sign-in-overlay";
+import { ProgressTrail } from "./progress-trail";
 
 interface Props {
   scanId: string;
@@ -54,6 +55,9 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
           <span>{state.banner}</span>
         </div>
       ) : null}
+
+      {/* progress trail — fills in as events stream */}
+      <ProgressTrail state={state} />
 
       {/* score tiles (free, anonymous-visible) */}
       <ScoreTiles state={state} />

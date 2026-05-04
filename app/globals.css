@@ -43,6 +43,13 @@
 /* Surface 2 — Live report (dark interactive, Direction A)
  * Applied via .surface-report on a wrapper, OR via .dark on <html> for
  * full route override (e.g. /scan/[id]). next-themes flips the class.
+ *
+ * IMPORTANT: we ALSO set background + color directly on the wrapper, not
+ * only the CSS variables. The body element has already resolved its color
+ * against the :root (light) tokens by the time .surface-report renders, so
+ * descendants would inherit the LIGHT color through the body. Setting
+ * color/background on .surface-report itself locks the dark theme for its
+ * subtree regardless of what the body decided.
  */
 .dark,
 .surface-report {
@@ -52,6 +59,17 @@
   --rule: rgba(255, 255, 255, 0.08);
   --surface: #111113;
   --surface-muted: #16161a;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* When a .surface-report wrapper is in the DOM, also paint the body dark so
+ * the page never shows a cream stripe behind the wrapper at any scroll
+ * position. Selector targets a body that has any descendant with class
+ * surface-report — supported in modern browsers via :has(). */
+body:has(.surface-report) {
+  background: #0a0a0b;
+  color: #ededef;
 }
 
 @layer base {

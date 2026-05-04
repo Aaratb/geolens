@@ -12,7 +12,9 @@ export function GapCard({ gap }: { gap: Gap }) {
     <div className="surface rounded-xl p-4 flex items-start gap-4">
       <span className="font-mono-tabular text-[11px] marginalia mt-0.5 shrink-0">#{gap.id}</span>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium">{gap.title}</div>
+        <div className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+          {gap.title}
+        </div>
         <div className="text-[13px] marginalia mt-1">{gap.why}</div>
         <div className="mt-2 font-mono-tabular text-[10px] uppercase tracking-[0.18em] marginalia flex items-center gap-3">
           <span className="flex items-center gap-1.5">

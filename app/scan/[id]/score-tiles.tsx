@@ -27,7 +27,10 @@ function Tile({ label, value, suffix }: { label: string; value: number | null; s
   return (
     <div className="surface rounded-xl p-4">
       <div className="font-mono-tabular text-[11px] uppercase tracking-wider marginalia">{label}</div>
-      <div className="mt-2 font-mono-tabular text-3xl font-semibold">
+      <div
+        className="mt-2 font-mono-tabular text-3xl font-semibold"
+        style={{ color: "var(--ink)" }}
+      >
         <CountUp to={value} />
         {suffix}
       </div>
