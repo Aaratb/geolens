@@ -1,0 +1,98 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Agent Guide Modal</title><style>
+:root {
+  --color-primary-blue-50:#EFF4FF; --color-primary-blue-100:#D1E0FF; --color-primary-blue-300:#84ADFF; --color-primary-blue-500:#2970FF; --color-primary-blue-600:#155EEF; --color-primary-blue-700:#004EEB; --color-primary-blue-900:#00359E;
+  --color-neutral-white:#FFFFFF; --color-neutral-gray-25:#FCFCFD; --color-neutral-gray-50:#F9FAFB; --color-neutral-gray-100:#F2F4F7; --color-neutral-gray-200:#EAECF0; --color-neutral-gray-300:#D0D5DD; --color-neutral-gray-400:#98A2B3; --color-neutral-gray-500:#667085; --color-neutral-gray-600:#475467; --color-neutral-gray-700:#344054; --color-neutral-gray-800:#1D2939; --color-neutral-gray-900:#101828;
+  --color-secondary-success-500:#12B76A; --color-secondary-warning-500:#F79009; --color-secondary-error-500:#F04438;
+  --bg-page:var(--color-neutral-white); --bg-surface:var(--color-neutral-white); --bg-subtle:var(--color-neutral-gray-50); --bg-hover:var(--color-neutral-gray-100); --bg-selected:var(--color-primary-blue-50);
+  --border-default:var(--color-neutral-gray-300); --border-subtle:var(--color-neutral-gray-200); --border-focus:var(--color-primary-blue-700);
+  --text-primary:var(--color-neutral-gray-900); --text-secondary:var(--color-neutral-gray-700); --text-tertiary:var(--color-neutral-gray-500); --text-accent:var(--color-primary-blue-700); --text-on-accent:#fff;
+  --accent-base:var(--color-primary-blue-600); --accent-hover:var(--color-primary-blue-700); --accent-pressed:var(--color-primary-blue-900);
+  --shadow-xs:0 1px 2px 0 rgba(16,24,40,.05); --focus-ring:0 0 0 4px var(--color-primary-blue-100), 0 1px 2px 0 rgba(16,24,40,.05);
+}
+.dark { --bg-page:#0A0A0A; --bg-surface:#141414; --bg-subtle:#1A1A1A; --bg-hover:#1F1F22; --bg-selected:rgba(21,94,239,.14); --border-default:#2A2A2E; --border-subtle:#222226; --border-focus:#84ADFF; --text-primary:#FAFAFA; --text-secondary:#A1A1AA; --text-tertiary:#71717A; --text-accent:#84ADFF; --accent-base:#2970FF; --accent-hover:#528BFF; --accent-pressed:#155EEF; --focus-ring:0 0 0 4px rgba(132,173,255,.2); }
+* { box-sizing:border-box; transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .15s ease; }
+body { margin:0; background:var(--bg-page); color:var(--text-primary); font:400 14px/20px Inter,-apple-system,BlinkMacSystemFont,sans-serif; }
+a { color:inherit; text-decoration:none; } button { font:600 13px/18px Inter,-apple-system,BlinkMacSystemFont,sans-serif; }
+.shell { min-height:100vh; display:grid; grid-template-columns:240px 1fr; }
+.sidebar { background:var(--bg-subtle); border-right:1px solid var(--border-subtle); padding:24px 16px; position:sticky; top:0; height:100vh; }
+.brand { font-weight:700; font-size:18px; letter-spacing:-.02em; margin-bottom:28px; }
+.nav { display:grid; gap:6px; }
+.nav a { min-height:40px; display:flex; align-items:center; gap:10px; border-radius:8px; padding:10px 12px; color:var(--text-secondary); border-left:2px solid transparent; }
+.nav a:hover { background:var(--bg-hover); }
+.nav a.active { background:var(--bg-selected); color:var(--text-accent); border-left-color:var(--accent-base); }
+.main { padding:24px 32px 56px; }
+.topbar { min-height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
+.meta { color:var(--text-tertiary); font-size:12px; line-height:17px; font-weight:500; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.dot { display:inline-block; width:6px; height:6px; border-radius:999px; background:var(--color-secondary-success-500); }
+.dot.warn { background:var(--color-secondary-warning-500); } .dot.err { background:var(--color-secondary-error-500); }
+.hero { border:1px solid var(--border-subtle); border-radius:16px; padding:28px; background:var(--bg-surface); margin-bottom:24px; }
+.eyebrow { color:var(--text-tertiary); font-size:11px; line-height:16px; font-weight:600; text-transform:uppercase; letter-spacing:.12em; margin-bottom:8px; }
+h1 { margin:0; font-size:30px; line-height:38px; font-weight:600; letter-spacing:0; }
+h2 { margin:0; font-size:20px; line-height:30px; font-weight:600; } h3 { margin:0; font-size:18px; line-height:28px; font-weight:600; }
+p { margin:0; color:var(--text-secondary); }
+.actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; }
+.btn { min-height:40px; border-radius:8px; padding:10px 16px; border:1px solid var(--border-default); background:var(--bg-surface); color:var(--text-secondary); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+.btn:hover { background:var(--bg-hover); } .btn:focus-visible { outline:none; box-shadow:var(--focus-ring); border-color:var(--border-focus); } .btn:active { transform:scale(.97); }
+.btn.primary { background:var(--accent-base); border-color:var(--accent-base); color:var(--text-on-accent); } .btn.primary:hover { background:var(--accent-hover); } .btn.primary:active { background:var(--accent-pressed); }
+.grid { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:24px; align-items:start; }
+.stack { display:grid; gap:16px; }
+.card { background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:12px; padding:24px; }
+.card:hover { background:var(--bg-hover); }
+.fix-card { display:grid; gap:18px; }
+.card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.rank { width:28px; height:28px; border-radius:8px; border:1px solid var(--border-subtle); display:grid; place-items:center; color:var(--text-tertiary); font-weight:600; }
+.label-row { display:flex; gap:12px; align-items:center; color:var(--text-tertiary); font-size:12px; line-height:17px; font-weight:500; flex-wrap:wrap; }
+.code { background:var(--bg-subtle); border:1px solid var(--border-subtle); border-radius:10px; color:var(--text-secondary); padding:14px; font:500 12px/18px ui-monospace,SFMono-Regular,Menlo,monospace; overflow:auto; }
+.checklist { display:grid; gap:8px; color:var(--text-secondary); padding-left:0; list-style:none; margin:0; } .checklist li::before { content:'✓'; color:var(--accent-base); margin-right:8px; }
+.rail { position:sticky; top:24px; display:grid; gap:16px; }
+.rail .card { padding:20px; }
+.tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:4px; border-radius:10px; background:var(--bg-subtle); margin:12px 0; }
+.tabs span { min-height:32px; display:grid; place-items:center; border-radius:8px; color:var(--text-tertiary); font-size:12px; font-weight:600; } .tabs .on { background:var(--bg-surface); color:var(--text-accent); border:1px solid var(--border-subtle); }
+.toast { position:fixed; right:24px; top:24px; border-left:3px solid var(--accent-base); border-radius:12px; background:var(--bg-surface); border-top:1px solid var(--border-subtle); border-right:1px solid var(--border-subtle); border-bottom:1px solid var(--border-subtle); padding:14px 16px; box-shadow:var(--shadow-xs); animation:slideIn .25s ease-out; }
+@keyframes slideIn { from { opacity:0; transform:translateX(100%); } to { opacity:1; transform:translateX(0); } }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.45; } }
+.skeleton { height:16px; border-radius:8px; background:linear-gradient(-90deg,var(--color-neutral-gray-100),var(--color-neutral-gray-200),var(--color-neutral-gray-100)); animation:pulse 1.5s infinite; }
+.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.4); display:grid; place-items:center; padding:24px; animation:fade .2s ease; }
+.modal { width:min(560px,100%); background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:16px; padding:32px; animation:pop .2s ease-out; }
+@keyframes fade { from { opacity:0; } to { opacity:1; } } @keyframes pop { from { opacity:0; transform:translateY(8px) scale(.98); } to { opacity:1; transform:translateY(0) scale(1); } }
+.mobilebar { display:none; }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+@media (max-width:767px) { .shell { display:block; } .sidebar { display:none; } .mobilebar { min-height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; border-bottom:1px solid var(--border-subtle); } .main { padding:16px; } .topbar { align-items:flex-start; } .hero { padding:20px; } h1 { font-size:24px; line-height:32px; } .grid { grid-template-columns:1fr; } .rail { position:static; order:-1; } .actions .btn { width:100%; min-height:44px; } .modal-backdrop { padding:0; } .modal { min-height:100vh; border-radius:0; } }
+@media (min-width:768px) and (max-width:1023px) { .shell { grid-template-columns:64px 1fr; } .sidebar { padding:20px 8px; } .brand { font-size:0; } .brand::after { content:'G'; font-size:18px; } .nav a span { display:none; } .main { padding:24px; } .grid { grid-template-columns:1fr; } .rail { position:static; } }
+@media (min-width:1280px) { .main-inner { max-width:1200px; margin:0 auto; } }
+</style><link rel="stylesheet" href="../geolens-prototype.css"></head><body class="surface-report"><div class="mobilebar"><strong>GEOlens</strong><button class="btn" onclick="toggleTheme()">Theme</button></div><div class="shell">
+    <aside class="sidebar"><div class="brand">GEOlens</div><nav class="nav">
+      <a class="" href="../scan-report/default.html"><span>Report</span></a>
+      <a class="active" href="default.html"><span>Fix Pack</span></a>
+      <a href="default.html"><span>History</span></a>
+      <a href="../../competitive-research.md"><span>Methodology</span></a>
+    </nav></aside><main class="main"><div class="main-inner"><div class="topbar"><div class="meta"><a href="../scan-report/default.html">← Back to scan</a><span>linear.app</span><span>May 4, 2026</span><span><i class="dot"></i> Early access</span></div><button class="btn" onclick="toggleTheme()">Toggle theme</button></div><section class="hero"><div class="eyebrow">Fix Pack · top 3 gaps</div><h1>Your scan-grounded Fix Pack is ready</h1><p style="margin-top:10px;max-width:760px">Top 3 SEO/AEO gaps packaged as fix cards, copyable assets, and a Claude Code/Cursor agent guide. GEOlens does not edit your site or access your repository.</p><div class="actions"><button class="btn primary" onclick="copied('Prompt copied')">Copy Cursor/Claude Code prompt</button><button class="btn primary" onclick="copied('Agent guide downloaded')">Download agent guide (.md)</button><a class="btn" href="../scan-report/default.html">Back to scan</a></div></section><div class="grid"><section class="stack">
+  <article class="card fix-card"><div class="card-head"><div><div class="label-row"><span class="rank">1</span><span><i class="dot err"></i> High severity</span><span>Confidence: medium</span></div><h2 style="margin-top:10px">Add an llms.txt guide for AI crawlers</h2></div><button class="btn" onclick="copied('llms.txt asset copied')">Copy asset</button></div><p>Observed evidence: no LLM guidance file was found during crawl. Add a concise guide that explains canonical pages, product positioning, and preferred citations.</p><pre class="code"># Linear-style project management
+
+&gt; Canonical product pages and docs for AI assistants.
+- Homepage: https://linear.app
+- Pricing: /pricing
+- Docs: /docs</pre><ul class="checklist"><li>Add file at the public root.</li><li>Link canonical docs and pricing pages.</li><li>Rescan to verify discovery.</li></ul></article>
+  <article class="card fix-card"><div class="card-head"><div><div class="label-row"><span class="rank">2</span><span><i class="dot warn"></i> Medium severity</span><span>Confidence: high</span></div><h2 style="margin-top:10px">Rewrite homepage metadata for answer extraction</h2></div><button class="btn" onclick="copied('Metadata asset copied')">Copy asset</button></div><p>Observed evidence: title and description are brand-forward but do not clearly state category, audience, and outcome in answer-friendly language.</p><pre class="code">Title: Project management software for high-velocity teams
+Meta: Plan, track, and ship product work with workflows built for modern engineering teams.</pre><ul class="checklist"><li>Update title and meta description.</li><li>Align Open Graph title with category language.</li><li>Verify rendered tags locally.</li></ul></article>
+  <article class="card fix-card"><div class="card-head"><div><div class="label-row"><span class="rank">3</span><span><i class="dot warn"></i> Medium severity</span><span>Manual review needed</span></div><h2 style="margin-top:10px">Make pricing content citation-ready</h2></div><button class="btn" onclick="copied('Content brief copied')">Copy brief</button></div><p>Observed evidence: pricing content is visually clear, but extractable Q&A-style answers are limited. This gap needs human review before broad content changes.</p><pre class="code">Add an FAQ section:
+- Who is the product for?
+- What plans are available?
+- How does pricing scale by team size?</pre><ul class="checklist"><li>Keep claims factual and current.</li><li>Add concise FAQ structure.</li><li>Validate schema if FAQPage JSON-LD is added.</li></ul></article>
+</section><aside class="rail"><section class="card"><div class="eyebrow">Agent guide</div><h3>geolens-fix-pack-agent.md</h3><p style="margin-top:8px">Persistent project guidance for Claude Code, Cursor, or another coding agent.</p><button class="btn primary" style="width:100%;margin-top:16px" onclick="copied('Agent guide downloaded')">Download .md</button></section><section class="card"><div class="eyebrow">Install this guide</div><div class="tabs"><span class="on">Claude</span><span>Cursor</span><span>AGENTS</span></div><pre class="code">Add this line to CLAUDE.md:
+@docs/geolens-fix-pack-agent.md</pre><p>Do not overwrite existing project guidance. Reference or append this guide instead.</p></section><section class="card"><div class="eyebrow">Prompt preview</div><pre class="code">You are an SEO/AEO optimization agent working from a GEOlens scan. Fix only the top 3 gaps below...</pre><button class="btn" style="width:100%;margin-top:12px" onclick="copied('Prompt copied')">Copy prompt</button></section><section class="card"><div class="eyebrow">Scope</div><p><strong>Included:</strong> top 3 gaps, assets, guide, verification checklist.</p><p style="margin-top:8px"><strong>Not included:</strong> autonomous edits, repo access, CMS changes, auto research.</p></section></aside></div><p style="margin-top:24px" class="meta">These recommendations can improve crawlability, answer-readiness, and citation-friendly structure, but AI answer inclusion and citations are controlled by each platform.</p><div class="modal-backdrop"><section class="modal"><div class="eyebrow">Preview</div><h2>GEOlens Fix Pack Agent Guide</h2><p style="margin-top:10px">Use this file as project guidance for Claude Code, Cursor, or another coding agent. It is based only on the scan findings below and does not perform autonomous web research.</p><pre class="code" style="margin-top:16px;max-height:260px"># GEOlens Fix Pack Agent Guide
+
+You are a scan-grounded SEO/AEO optimization agent...
+
+## Operating loop
+1. Inspect the repo.
+2. Plan small changes.
+3. Implement one slice.
+4. Verify.
+5. Summarize.</pre><div class="actions"><button class="btn primary" onclick="copied('Agent guide downloaded')">Download .md</button><a class="btn" href="default.html">Close</a></div></section></div></div></main></div>
+<script>
+function toggleTheme(){ document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
+if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+function copied(label){ const t=document.createElement('div'); t.className='toast'; t.textContent=label || 'Copied to clipboard'; document.body.appendChild(t); setTimeout(()=>t.remove(),2400); }
+</script>
+</body></html>

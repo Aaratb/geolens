@@ -1,14 +1,18 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useScanStream } from "@/lib/hooks/use-scan-stream";
+import { trackFixPackClientEvent } from "@/lib/telemetry/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScoreTiles } from "./score-tiles";
 import { GapCard } from "./gap-card";
 import { SignInOverlay } from "./sign-in-overlay";
 import { ProgressTrail } from "./progress-trail";
 import { ShareButton } from "./share-button";
+import { WaitlistDialog } from "./waitlist-dialog";
 
 interface Props {
   scanId: string;
@@ -19,15 +23,26 @@ interface Props {
 export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
   const state = useScanStream(scanId);
   const { isSignedIn, isLoaded } = useUser();
+  const router = useRouter();
+  const claimedRef = useRef(false);
 
-  // Claim anonymous scan after sign-in completes. Log failures so they're
-  // observable rather than silently swallowed. (Phase 7 review: TS-MED-1)
+  // Claim anonymous scan after sign-in completes. router.refresh() forces the
+  // server component shell to re-render with the now-claimed scan so any SSR
+  // ownership data (e.g. share-button enablement, future user-scoped views)
+  // updates without a hard reload. Guarded by claimedRef so refresh doesn't
+  // loop. (Phase 7 review: TS-MED-1; v1.1 sign-in unblur fix.)
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
-    fetch(`/api/v1/scans/${scanId}/claim`, { method: "POST" }).catch((err) => {
-      console.warn("[scan] claim failed", err);
-    });
-  }, [isLoaded, isSignedIn, scanId]);
+    if (!isLoaded || !isSignedIn || claimedRef.current) return;
+    claimedRef.current = true;
+    fetch(`/api/v1/scans/${scanId}/claim`, { method: "POST" })
+      .then((r) => {
+        if (r.ok) router.refresh();
+      })
+      .catch((err) => {
+        console.warn("[scan] claim failed", err);
+        claimedRef.current = false;
+      });
+  }, [isLoaded, isSignedIn, scanId, router]);
 
   const brand = state.brandName ?? initialBrand;
   const category = state.category ?? initialCategory;
@@ -84,6 +99,10 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
         )}
       </section>
 
+      {state.status === "complete" ? (
+        <FixPackReportCta scanId={scanId} signedIn={!!isSignedIn} />
+      ) : null}
+
       {/* sign-in gated drill-down sections */}
       <DrillDown state={state} locked={showSignInWall} scanId={scanId} />
 
@@ -107,6 +126,67 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
         <FailureCard stage={state.failure.stage} reason={state.failure.reason} />
       ) : null}
     </div>
+  );
+}
+
+function FixPackReportCta({ scanId, signedIn }: { scanId: string; signedIn: boolean }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <section className="surface rounded-xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div className="font-mono-tabular text-[10px] uppercase tracking-[0.22em] marginalia">
+            Fix Pack · Beta
+          </div>
+          <h2 className="font-display text-[22px] leading-tight font-semibold mt-1">
+            Turn the top findings into an agent-ready repair pack.
+          </h2>
+          <p className="text-[13px] marginalia leading-[1.7] mt-2 max-w-xl">
+            Generate copy-paste assets, a coding-agent prompt, and a downloadable Markdown file
+            for Claude Code or Cursor.
+          </p>
+        </div>
+        {signedIn ? (
+          <Link
+            href={`/scan/${scanId}/fix-pack`}
+            onClick={() =>
+              trackFixPackClientEvent({
+                event: "fixpack.cta.clicked",
+                scanId,
+                source: "scan_report",
+                action: "open",
+              })
+            }
+            className="inline-flex items-center justify-center rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+          >
+            Open Fix Pack
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              trackFixPackClientEvent({
+                event: "fixpack.waitlist.clicked",
+                scanId,
+                source: "scan_report",
+                action: "join_waitlist",
+              });
+              setOpen(true);
+            }}
+            className="inline-flex items-center justify-center rounded-md border border-[var(--rule)] px-4 py-2 text-sm font-medium hover:bg-[var(--surface-muted)]"
+          >
+            Join waitlist
+          </button>
+        )}
+      </section>
+      <WaitlistDialog
+        open={open}
+        onOpenChange={setOpen}
+        scanId={scanId}
+        source="fix_pack_cta"
+      />
+    </>
   );
 }
 
@@ -212,6 +292,7 @@ function StatusDot({ status }: { status: string }) {
         : "var(--color-accent)";
   return (
     <span
+      aria-hidden="true"
       className={`inline-block w-1.5 h-1.5 rounded-full ${status === "streaming" ? "animate-pulse" : ""}`}
       style={{ background: color }}
     />
@@ -276,7 +357,7 @@ function DrillDown({
           </div>
         )}
       </div>
-      {locked ? <SignInOverlay /> : null}
+      {locked ? <SignInOverlay scanId={scanId} /> : null}
     </section>
   );
 }

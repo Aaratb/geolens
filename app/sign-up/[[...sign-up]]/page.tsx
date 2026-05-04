@@ -1,7 +1,24 @@
 import { SignUp } from "@clerk/nextjs";
 import Link from "next/link";
 
-export default function SignUpPage() {
+interface Props {
+  searchParams: Promise<{ redirect_url?: string }>;
+}
+
+function safeRedirect(raw: string | undefined): string {
+  if (!raw) return "/";
+  try {
+    const decoded = decodeURIComponent(raw);
+    if (!decoded.startsWith("/") || decoded.startsWith("//")) return "/";
+    return decoded;
+  } catch {
+    return "/";
+  }
+}
+
+export default async function SignUpPage({ searchParams }: Props) {
+  const { redirect_url } = await searchParams;
+  const target = safeRedirect(redirect_url);
   return (
     <main className="min-h-screen px-6 py-10">
       <div className="mx-auto flex max-w-5xl flex-col gap-10">
@@ -27,8 +44,9 @@ export default function SignUpPage() {
           <SignUp
             path="/sign-up"
             routing="path"
-            signInUrl="/sign-in"
-            fallbackRedirectUrl="/"
+            signInUrl={`/sign-in?redirect_url=${encodeURIComponent(target)}`}
+            forceRedirectUrl={target}
+            fallbackRedirectUrl={target}
             appearance={{
               elements: {
                 rootBox: "w-full",

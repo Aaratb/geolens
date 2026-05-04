@@ -47,6 +47,9 @@ export type Severity = (typeof SEVERITIES)[number];
 export const FINDING_CATEGORIES = ["seo", "hygiene", "engine", "citability"] as const;
 export type FindingCategory = (typeof FINDING_CATEGORIES)[number];
 
+export const FIX_PACK_STATUSES = ["generating", "completed", "failed"] as const;
+export type FixPackStatus = (typeof FIX_PACK_STATUSES)[number];
+
 /* ---------- tables ---------- */
 
 export const users = pgTable("users", {
@@ -158,6 +161,29 @@ export const scanPagesCrawled = pgTable(
   (t) => [index("pages_scan_idx").on(t.scanId)],
 );
 
+export const scanFixPacks = pgTable(
+  "scan_fix_packs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    scanId: uuid("scan_id")
+      .notNull()
+      .references(() => scans.id, { onDelete: "cascade" }),
+    requestedBy: text("requested_by").references(() => users.id, { onDelete: "set null" }),
+    status: text("status", { enum: FIX_PACK_STATUSES }).notNull().default("generating"),
+    version: text("version").notNull().default("v1"),
+    payload: jsonb("payload"),
+    error: text("error"),
+    model: text("model"),
+    costCents: integer("cost_cents"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex("scan_fix_packs_scan_id_uq").on(t.scanId),
+    index("scan_fix_packs_status_idx").on(t.status),
+  ],
+);
+
 export const shareTokens = pgTable(
   "share_tokens",
   {
@@ -244,6 +270,8 @@ export type NewScan = typeof scans.$inferInsert;
 export type ScanFinding = typeof scanFindings.$inferSelect;
 export type ScanEngineProbe = typeof scanEngineProbes.$inferSelect;
 export type ScanPageCrawled = typeof scanPagesCrawled.$inferSelect;
+export type ScanFixPack = typeof scanFixPacks.$inferSelect;
+export type NewScanFixPack = typeof scanFixPacks.$inferInsert;
 export type ShareToken = typeof shareTokens.$inferSelect;
 export type WaitlistEntry = typeof waitlistEntries.$inferSelect;
 export type EventRow = typeof events.$inferSelect;

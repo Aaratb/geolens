@@ -22,7 +22,7 @@ const Body = z.object({
   email: z.string().email().max(254),
   scanId: z.string().uuid().optional(),
   gapId: z.string().uuid().optional(),
-  source: z.enum(["landing", "gap_cta", "share_view", "pdf_stub"]).optional(),
+  source: z.enum(["landing", "gap_cta", "share_view", "pdf_stub", "fix_pack_cta"]).optional(),
 });
 
 export async function POST(req: NextRequest) {

@@ -22,6 +22,8 @@ export async function getScanWithDetails(scanId: string) {
   return { header, findings, probes, pages };
 }
 
+export type ScanWithDetails = NonNullable<Awaited<ReturnType<typeof getScanWithDetails>>>;
+
 /**
  * Public summary view: header + only top-3 findings, no probes, no page detail.
  * This is what anonymous viewers see before sign-in.

@@ -5,6 +5,7 @@
  *   rl:scan:ip:<hash>     2 / 24h    anonymous scans
  *   rl:scan:user:<id>     10 / 24h   authenticated scans
  *   rl:waitlist:ip:<hash> 5 / 1h     waitlist signups
+ *   rl:fixpack:events:<hash> 30 / 10m client telemetry writes
  */
 import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
@@ -37,6 +38,7 @@ function redis(): Redis {
 let _anon: Ratelimit | null = null;
 let _user: Ratelimit | null = null;
 let _waitlist: Ratelimit | null = null;
+let _fixPackEvents: Ratelimit | null = null;
 
 function anonScanLimiter(): Ratelimit {
   if (!_anon) {
@@ -72,6 +74,18 @@ function waitlistLimiter(): Ratelimit {
     });
   }
   return _waitlist;
+}
+
+function fixPackEventsLimiter(): Ratelimit {
+  if (!_fixPackEvents) {
+    _fixPackEvents = new Ratelimit({
+      redis: redis(),
+      limiter: Ratelimit.slidingWindow(30, "10 m"),
+      prefix: "rl:fixpack:events",
+      analytics: false,
+    });
+  }
+  return _fixPackEvents;
 }
 
 export function hashIp(ip: string): string {
@@ -125,6 +139,15 @@ export async function limitWaitlist(ipHash: string): Promise<LimitResult> {
     return { ok: r.success, remaining: r.remaining, reset: r.reset, limit: r.limit };
   } catch {
     return { ok: true, remaining: 999, reset: Date.now() + 3_600_000, limit: 999 };
+  }
+}
+
+export async function limitFixPackEvents(ipHash: string): Promise<LimitResult> {
+  try {
+    const r = await fixPackEventsLimiter().limit(ipHash);
+    return { ok: r.success, remaining: r.remaining, reset: r.reset, limit: r.limit };
+  } catch {
+    return { ok: true, remaining: 999, reset: Date.now() + 600_000, limit: 999 };
   }
 }
 

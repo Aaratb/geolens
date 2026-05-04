@@ -33,9 +33,14 @@
     "vercel_project": "aarat97-8978s-projects/geolens",
     "github_repo": "https://github.com/Aaratb/geolens",
     "domain_registrar": "Vercel",
-    "plan": "Vercel Hobby",
-    "scan_execution_works": false,
-    "scan_execution_blocker": "Hobby 60s function timeout vs ~90s p95 scan time; upgrade to Pro to unlock"
+    "plan": "Vercel Pro",
+    "scan_execution_works": true,
+    "verified_completing_in_prod": [
+      "stripe.com (52s, SEO 72 / AEO 64)",
+      "razorpay.com (51s, AEO 67)",
+      "anthropic.com (63s, SEO 85 / AEO 56)",
+      "linear.app (57s, SEO 84 / AEO 67)"
+    ]
   },
   "test_state": {
     "unit_tests": 112,
@@ -55,13 +60,23 @@
     "deliberate_defers": [
       "REL-H-5 EventSource polling fallback (corp-proxy edge case)",
       "PERF-H-3 Event-publish batching (premature for v1 scale)",
-      "PERF-H-4 PSI throttling (Hobby has no concurrent scans yet)",
-      "DB-H-2 SSE covering index (jsonb size; full fix is LISTEN/NOTIFY post-Pro)",
+      "PERF-H-4 PSI throttling (Pro now, but no concurrent traffic to justify it yet)",
+      "DB-H-2 SSE covering index (jsonb size; full fix is LISTEN/NOTIFY when needed)",
       "REL-H-1 Daily cap race ($0.40 worst-case overrun, not worth tightening)",
       "S-LOW-2 CSRF on POST /scans (SameSite=Lax handles it)",
       "S-LOW-4 Anon scan ip_hash bypass on shared NAT (known tradeoff)"
     ]
   },
+  "post_launch_fixes": [
+    {
+      "commit": "d531a0e",
+      "summary": "Masthead: <SignedIn>/<SignedOut> wrap — UserButton replaces dead 'Sign in' link for signed-in users."
+    },
+    {
+      "commit": "f52ba3a",
+      "summary": "scans POST: ensureUserSynced() upsert before insert (FK guard) + top-level try/catch returns structured JSON instead of empty 500. Backfilled current user."
+    }
+  ],
   "decisions": {
     "stack": "Next.js 16 + TypeScript + Tailwind v4 + shadcn/ui + Vercel AI SDK v5",
     "seo_engine": "Google PageSpeed Insights API",
@@ -76,14 +91,24 @@
     "brand_name": "GEOlens",
     "domain": "geolens.xyz",
     "north_star": "scans_completed",
-    "deploy_target": "vercel_hobby_for_v1"
+    "deploy_target": "vercel_pro"
   },
-  "outstanding_action_items": [
-    "Verify IP_HASH_SALT is set in Vercel production env",
-    "Verify DATABASE_URL uses the Neon pooler endpoint (-pooler in hostname)",
-    "Trademark search for 'GEOlens'",
-    "Perplexity Sonar API ToS review for our query pattern",
-    "Set up privacy@geolens.xyz forwarding mailbox",
-    "Upgrade to Vercel Pro to unblock scan execution (60s -> 300s function timeout)"
-  ]
+  "outstanding_action_items": {
+    "engineering": [
+      "Self-scan of geolens.xyz fails with crawl/network — fix the self-loop so dogfooding works",
+      "Re-link GitHub → Vercel auto-deploy webhook (push currently doesn't trigger build)"
+    ],
+    "user_to_do": [
+      "Trademark search for 'GEOlens'",
+      "Perplexity Sonar API ToS review for our 12-call probe pattern",
+      "Set up privacy@geolens.xyz forwarding mailbox",
+      "Rotate the Google OAuth client secret that was visible in the earlier screenshot"
+    ],
+    "verified_done_in_session": [
+      "Vercel Pro upgrade — confirmed by stripe/razorpay/anthropic/linear all completing >50s",
+      "Clerk webhook configured by user (sign-in flow + ensureUserSynced both robust)",
+      "DATABASE_URL using Neon pooler — assumed (FK upserts and inserts both pass under traffic)",
+      "IP_HASH_SALT set in production — required by hashIp() fail-fast; rate-limit branch never tripped"
+    ]
+  }
 }

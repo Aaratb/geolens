@@ -1,7 +1,34 @@
 import { SignIn } from "@clerk/nextjs";
 import Link from "next/link";
 
-export default function SignInPage() {
+interface Props {
+  searchParams: Promise<{ redirect_url?: string }>;
+}
+
+/**
+ * Sanitize redirect_url to a same-origin path. Defends against open-redirect
+ * by rejecting absolute URLs, protocol-relative URLs, and anything that isn't
+ * a leading `/` path.
+ */
+function safeRedirect(raw: string | undefined): string {
+  if (!raw) return "/";
+  try {
+    const decoded = decodeURIComponent(raw);
+    if (!decoded.startsWith("/") || decoded.startsWith("//")) return "/";
+    return decoded;
+  } catch {
+    return "/";
+  }
+}
+
+export default async function SignInPage({ searchParams }: Props) {
+  const { redirect_url } = await searchParams;
+  const target = safeRedirect(redirect_url);
+  // Pass `target` to BOTH redirect props so:
+  //   - a fresh sign-in lands on the scan page (forceRedirectUrl)
+  //   - an already-signed-in user lands on the scan page too (fallbackRedirectUrl)
+  // Clerk picks fallbackRedirectUrl when the user is already authenticated and
+  // hits this page — without it, they'd be sent to "/" by default.
   return (
     <main className="min-h-screen px-6 py-10">
       <div className="mx-auto flex max-w-5xl flex-col gap-10">
@@ -27,8 +54,9 @@ export default function SignInPage() {
           <SignIn
             path="/sign-in"
             routing="path"
-            signUpUrl="/sign-up"
-            fallbackRedirectUrl="/"
+            signUpUrl={`/sign-up?redirect_url=${encodeURIComponent(target)}`}
+            forceRedirectUrl={target}
+            fallbackRedirectUrl={target}
             appearance={{
               elements: {
                 rootBox: "w-full",

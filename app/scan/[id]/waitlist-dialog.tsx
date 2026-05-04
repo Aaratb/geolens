@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2, Check } from "lucide-react";
 import {
   Dialog,
@@ -19,7 +19,7 @@ interface Props {
   scanId?: string;
   gapId?: string;
   gapTitle?: string;
-  source: "landing" | "gap_cta" | "share_view" | "pdf_stub";
+  source: "landing" | "gap_cta" | "share_view" | "pdf_stub" | "fix_pack_cta";
 }
 
 export function WaitlistDialog({ open, onOpenChange, scanId, gapId, gapTitle, source }: Props) {
@@ -28,12 +28,18 @@ export function WaitlistDialog({ open, onOpenChange, scanId, gapId, gapTitle, so
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const userEmail = user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses?.[0]?.emailAddress;
   const effectiveEmail = isSignedIn && userEmail ? userEmail : email;
 
   async function submit() {
     if (!effectiveEmail.trim() || busy) return;
+    if (!isSignedIn && inputRef.current && !inputRef.current.checkValidity()) {
+      setError("Please enter a valid email address.");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -53,7 +59,7 @@ export function WaitlistDialog({ open, onOpenChange, scanId, gapId, gapTitle, so
       } else {
         setDone(true);
         // Auto-close after a beat
-        setTimeout(() => {
+        closeTimerRef.current = setTimeout(() => {
           onOpenChange(false);
           setDone(false);
           setEmail("");
@@ -65,6 +71,12 @@ export function WaitlistDialog({ open, onOpenChange, scanId, gapId, gapTitle, so
       setBusy(false);
     }
   }
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -104,6 +116,7 @@ export function WaitlistDialog({ open, onOpenChange, scanId, gapId, gapTitle, so
             </div>
           ) : (
             <Input
+              ref={inputRef}
               type="email"
               inputMode="email"
               autoComplete="email"
