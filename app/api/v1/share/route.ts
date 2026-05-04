@@ -12,6 +12,7 @@ import { db } from "@/lib/db/client";
 import { scans, shareTokens } from "@/lib/db/schema";
 import { extractIp, hashIp } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { track } from "@/lib/telemetry/track";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -67,6 +68,12 @@ export async function POST(req: NextRequest) {
       { status: 401 },
     );
   }
+
+  track({
+    event: "share.link.created",
+    userId: createdBy,
+    props: { scanId: scan.id, token },
+  });
 
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(req.url).origin;
   return NextResponse.json({ token, url: `${origin}/share/${token}` });

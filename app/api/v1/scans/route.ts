@@ -18,6 +18,7 @@ import { canonicalUrlKey } from "@/lib/crawl";
 import { normalizeUrl } from "@/lib/crawl/url";
 import { extractIp, hashIp, limitScan } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { track } from "@/lib/telemetry/track";
 
 export const maxDuration = 300;
 export const runtime = "nodejs";
@@ -48,6 +49,11 @@ export async function POST(req: NextRequest) {
     user ? { kind: "user", userId: user.id } : { kind: "ip", ipHash },
   );
   if (!limit.ok) {
+    track({
+      event: "rate.limit.tripped",
+      userId: user?.id ?? null,
+      props: { route: "POST /scans", anonymous: !user },
+    });
     return NextResponse.json(
       {
         error: "rate_limited",
@@ -83,6 +89,12 @@ export async function POST(req: NextRequest) {
   }
 
   const scanId = inserted.id;
+
+  track({
+    event: "scan.started",
+    userId: user?.id ?? null,
+    props: { scanId, hostname, anonymous: !user },
+  });
 
   // Fire-and-forget. Vercel keeps the function alive until the spawned promise
   // resolves OR maxDuration expires. We catch + persist failure so the scan
