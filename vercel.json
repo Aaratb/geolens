@@ -4,6 +4,14 @@
     {
       "path": "/api/internal/cleanup",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/internal/budget-check",
+      "schedule": "*/5 * * * *"
     }
-  ]
+  ],
+  "functions": {
+    "app/api/v1/scans/route.ts": { "maxDuration": 300 },
+    "app/api/v1/scans/[id]/stream/route.ts": { "maxDuration": 300 }
+  }
 }

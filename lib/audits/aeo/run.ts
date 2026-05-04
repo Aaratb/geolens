@@ -22,6 +22,10 @@ interface RunOptions {
   modelMap?: Partial<Record<Engine, string>>;
   /** Per-call timeout in ms. Default 25_000. */
   timeoutMs?: number;
+  /** Override which engines to probe. Defaults to all four. */
+  engines?: readonly Engine[];
+  /** Override which probe kinds to run. Defaults to all three. */
+  probeKinds?: readonly ProbeKind[];
   /**
    * Hook called after each probe completes. Used by the orchestrator to push
    * SSE events as each engine finishes (vs waiting for all 12). May be async;
@@ -53,13 +57,15 @@ export async function runAeoProbes(opts: RunOptions): Promise<ProbeResult[]> {
   const timeoutMs = opts.timeoutMs ?? 25_000;
   const modelMap: Record<Engine, string> = { ...DEFAULT_MODEL_PER_ENGINE, ...opts.modelMap };
   const generator = opts.generator ?? defaultGenerator;
+  const engines = opts.engines ?? ENGINES;
+  const probeKinds = opts.probeKinds ?? PROBE_KINDS;
 
   // Each task carries its own (engine, probeKind) so the error path can read
   // them from the closure rather than reconstructing via index arithmetic.
   // (Phase 7 review: TS-H-3)
   const tasks: { engine: Engine; probeKind: ProbeKind; promise: Promise<ProbeResult> }[] = [];
-  for (const engine of ENGINES) {
-    for (const probeKind of PROBE_KINDS) {
+  for (const engine of engines) {
+    for (const probeKind of probeKinds) {
       tasks.push({
         engine,
         probeKind,

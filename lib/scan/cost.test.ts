@@ -5,13 +5,23 @@
  * Frozen fixtures = realistic token counts but predictable costs. If a model
  * is upgraded or pricing changes, this test will catch it before users do.
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import { load } from "cheerio";
 import { runScan } from "./run";
 import { memoryEventSink } from "./persist";
 import { stubDb } from "@/lib/db/test-stub";
 import type { CrawlOutput } from "@/lib/crawl/types";
 import type { CheerioAPI } from "cheerio";
+
+// Lock the cost test to the Pro profile (full scope: 4 engines × 3 probes = 12
+// calls). The test's intent is to verify the per-scan cost ceiling holds at
+// max scope; Hobby profile reduces scope and is implicitly cheaper.
+beforeEach(() => {
+  process.env.SCAN_PROFILE = "pro";
+});
+afterEach(() => {
+  delete process.env.SCAN_PROFILE;
+});
 
 const FROZEN_HTML = `<!doctype html>
 <html><head>

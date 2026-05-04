@@ -22,6 +22,7 @@ import { inferBrand } from "@/lib/inference/brand";
 import { computeAeoOverall } from "@/lib/score/aeo";
 import { rankGaps } from "@/lib/score/gaps";
 import { checkDailyBudget, recordSpend, PER_SCAN_CEILING_CENTS } from "./budget";
+import { getProfile } from "./profile";
 import {
   dbEventSink,
   persistCrawledPages,
@@ -104,13 +105,16 @@ export async function runScan(input: RunScanInput): Promise<RunScanOutput> {
     });
   }
 
-  // 2. Crawl
+  const profile = getProfile();
+
+  // 2. Crawl — scope sized to the active profile so the whole scan fits in
+  //    the platform's function-timeout budget (60s on Hobby, 300s on Pro).
   await setScanRunning(input.scanId, "crawl", input.db);
   const crawlOut = await crawler({
     url: normalized,
-    maxInternalPages: 5,
-    perPageTimeoutMs: 10_000,
-    totalBudgetMs: 30_000,
+    maxInternalPages: profile.maxInternalPages,
+    perPageTimeoutMs: profile.perPageTimeoutMs,
+    totalBudgetMs: profile.totalCrawlBudgetMs,
     ...input.crawlInput,
   });
 
@@ -150,11 +154,12 @@ export async function runScan(input: RunScanInput): Promise<RunScanOutput> {
     llmFallback: ctx.llmFallback,
   });
 
-  // 4. PSI on every page (parallel)
+  // 4. PSI — homepage only on Hobby (single 5-10s call); all pages on Pro.
   await setScanRunning(input.scanId, "psi", input.db);
-  const psiSettled = await Promise.allSettled(allPages.map((p) => psi({ url: p.url })));
+  const psiTargets = profile.psiScope === "all" ? allPages : [crawlOut.homepage];
+  const psiSettled = await Promise.allSettled(psiTargets.map((p) => psi({ url: p.url })));
   const usablePsi = psiSettled.flatMap((r, i) =>
-    r.status === "fulfilled" ? [{ page: allPages[i]!, result: r.value }] : [],
+    r.status === "fulfilled" ? [{ page: psiTargets[i]!, result: r.value }] : [],
   );
   for (const u of usablePsi) {
     await sink.publish({
@@ -194,13 +199,13 @@ export async function runScan(input: RunScanInput): Promise<RunScanOutput> {
   let enginesSkipped = 0;
 
   if (skipEngines) {
-    enginesSkipped = 4;
+    enginesSkipped = profile.engines.length;
   } else {
     // Emit one aeo.probe.started for each (engine, probeKind) pair so the
     // streaming UI's progress trail can show pending dots before completion.
     // (Phase 7 review: CR-H-2)
-    for (const engine of ["openai", "anthropic", "perplexity", "gemini"] as const) {
-      for (const probeKind of ["brand_recall", "category_placement", "citation_behavior"] as const) {
+    for (const engine of profile.engines) {
+      for (const probeKind of profile.probeKinds) {
         await sink.publish({ type: "aeo.probe.started", engine, probeKind });
       }
     }
@@ -209,6 +214,9 @@ export async function runScan(input: RunScanInput): Promise<RunScanOutput> {
     probeResults = await probes({
       scanId: input.scanId,
       ctx,
+      engines: profile.engines,
+      probeKinds: profile.probeKinds,
+      timeoutMs: profile.probeTimeoutMs,
       onProbeComplete: async (p) => {
         projectedCents += p.costCents;
         // Per-scan ceiling guard (best-effort: fired in-flight, can't recall already-running probes)
@@ -232,7 +240,7 @@ export async function runScan(input: RunScanInput): Promise<RunScanOutput> {
     });
     const okEngines = new Set(probeResults.filter((p) => p.status === "ok").map((p) => p.engine));
     enginesProbed = okEngines.size;
-    enginesSkipped = 4 - enginesProbed;
+    enginesSkipped = profile.engines.length - enginesProbed;
     costCents = probeResults.reduce((s, p) => s + p.costCents, 0);
     if (costCents > PER_SCAN_CEILING_CENTS) {
       await sink.publish({
