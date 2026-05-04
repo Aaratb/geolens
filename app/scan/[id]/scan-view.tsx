@@ -8,6 +8,7 @@ import { ScoreTiles } from "./score-tiles";
 import { GapCard } from "./gap-card";
 import { SignInOverlay } from "./sign-in-overlay";
 import { ProgressTrail } from "./progress-trail";
+import { ShareButton } from "./share-button";
 
 interface Props {
   scanId: string;
@@ -84,13 +85,18 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
       <DrillDown state={state} locked={showSignInWall} />
 
       {state.status === "complete" && state.durationMs !== null ? (
-        <div className="rule-t pt-6 marginalia text-[12px] flex items-center justify-between">
+        <div className="rule-t pt-6 marginalia text-[12px] flex items-center justify-between gap-4">
           <span>
             Done in <span className="font-mono-tabular">{Math.round(state.durationMs / 1000)}s</span>
             {" · "}
             <span className="font-mono-tabular">${(state.costCents ?? 0) / 100}</span> in AI compute
           </span>
-          <span className="font-mono-tabular text-[10px] uppercase tracking-[0.22em]">scan complete</span>
+          <div className="flex items-center gap-3">
+            <ShareButton scanId={scanId} enabled={!!isSignedIn} />
+            <span className="font-mono-tabular text-[10px] uppercase tracking-[0.22em]">
+              scan complete
+            </span>
+          </div>
         </div>
       ) : null}
 
