@@ -1,0 +1,110 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: Vol. 1 · Issue 01 · Beta
+        - generic [ref=e6]: GEOlens
+      - navigation [ref=e7]:
+        - link "Methodology" [ref=e8] [cursor=pointer]:
+          - /url: /methodology
+        - link "Sign in" [ref=e9] [cursor=pointer]:
+          - /url: /sign-in
+    - main [ref=e10]:
+      - generic [ref=e11]: An audit of how AI sees your site
+      - heading "A second opinion on how AI sees your site." [level=1] [ref=e12]:
+        - text: A second opinion on how AI
+        - text: sees your site.
+      - paragraph [ref=e13]: GEOlens audits your website the way Lighthouse audits its performance — but for the AI search era. We probe ChatGPT, Claude, Perplexity, and Gemini, then issue a numbered finding for every gap between how you describe yourself and how AI describes you.
+      - generic [ref=e16]:
+        - generic [ref=e17]: Submit URL
+        - textbox "yourbrand.com" [ref=e18]
+        - button "Begin audit →" [disabled] [ref=e19]
+      - generic [ref=e20]:
+        - generic [ref=e21]: Free executive summary · sign in to unlock the full report
+        - generic [ref=e22]: · No credit card
+      - generic [ref=e23]:
+        - complementary [ref=e24]:
+          - generic [ref=e25]: Specimen
+          - generic [ref=e26]: vercel.com
+          - generic [ref=e27]: A live sample audit. Numbered findings on the right are the same format your report will produce.
+          - generic [ref=e28]: At-a-glance
+          - generic [ref=e29]:
+            - generic [ref=e30]:
+              - generic [ref=e31]: SEO
+              - generic [ref=e32]: "94"
+            - generic [ref=e33]:
+              - generic [ref=e34]: AEO
+              - generic [ref=e35]: "71"
+            - generic [ref=e36]:
+              - generic [ref=e37]: Citation rate
+              - generic [ref=e38]: 58%
+            - generic [ref=e39]:
+              - generic [ref=e40]: Hygiene
+              - generic [ref=e41]: "62"
+            - generic [ref=e42]:
+              - generic [ref=e43]: Citability
+              - generic [ref=e44]: "82"
+        - generic [ref=e45]:
+          - generic [ref=e46]: Findings
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - generic [ref=e49]: "#GL-01"
+              - heading "No llms.txt at the root." [level=3] [ref=e50]
+            - paragraph [ref=e51]: "AI crawlers cannot find a curated map of your site. The llms.txt spec — emerging since late 2024 — is now the lowest-cost, highest-leverage AEO win we measure. Affected: every probed engine."
+            - generic [ref=e52]: Severity high · Estimated effort 30 min · Score impact +14
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - generic [ref=e55]: "#GL-02"
+              - heading "Brand cited 0/3 times by Perplexity." [level=3] [ref=e56]
+            - paragraph [ref=e57]: ChatGPT and Claude both surface your brand in category placement queries. Perplexity does not, despite indexing your domain — suggesting a citation source-trust gap rather than a discovery gap.
+            - generic [ref=e58]: Severity medium · Estimated effort 1–2 weeks · Score impact +9
+          - generic [ref=e59]:
+            - generic [ref=e60]:
+              - generic [ref=e61]: "#GL-03"
+              - heading "Schema.org coverage is thin." [level=3] [ref=e62]
+            - paragraph [ref=e63]: Your pages emit Organization only. Adding Article, FAQPage, and Product would lift extractability by an estimated 14 points across all four probe engines.
+            - generic [ref=e64]: Severity medium · Estimated effort 2–3 days · Score impact +11
+      - generic [ref=e65]:
+        - generic [ref=e66]: vs the dashboard tools
+        - heading "Free, full-stack, gap-first." [level=2] [ref=e67]
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - generic [ref=e70]: Tool
+            - generic [ref=e71]: SEO + AEO
+            - generic [ref=e72]: Free tier
+            - generic [ref=e73]: Streaming
+            - generic [ref=e74]: Action-first
+          - generic [ref=e75]:
+            - generic [ref=e76]: GEOlens
+            - generic [ref=e77]: ✓
+            - generic [ref=e78]: ✓
+            - generic [ref=e79]: ✓
+            - generic [ref=e80]: ✓
+          - generic [ref=e81]:
+            - generic [ref=e82]: Profound
+            - generic [ref=e83]: —
+            - generic [ref=e84]: —
+            - generic [ref=e85]: —
+            - generic [ref=e86]: ✓
+          - generic [ref=e87]:
+            - generic [ref=e88]: Ahrefs Brand Radar
+            - generic [ref=e89]: —
+            - generic [ref=e90]: —
+            - generic [ref=e91]: —
+            - generic [ref=e92]: —
+          - generic [ref=e93]:
+            - generic [ref=e94]: HubSpot AEO Grader
+            - generic [ref=e95]: —
+            - generic [ref=e96]: ✓
+            - generic [ref=e97]: —
+            - generic [ref=e98]: —
+    - contentinfo [ref=e99]:
+      - generic [ref=e100]: © 2026 GEOlens · A reviewer for the AI search era
+      - generic [ref=e101]:
+        - link "Methodology" [ref=e102] [cursor=pointer]:
+          - /url: /methodology
+        - link "Privacy" [ref=e103] [cursor=pointer]:
+          - /url: /privacy
+        - link "Terms" [ref=e104] [cursor=pointer]:
+          - /url: /terms
+  - alert [ref=e105]
