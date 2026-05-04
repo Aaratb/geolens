@@ -49,10 +49,13 @@ export async function fetchPage({
       return { ok: false, error: { kind: "non_html", contentType } };
     }
 
-    // Stream-cap the body to maxBytes
-    const buf = await readCapped(res, maxBytes);
-    if (buf === null) {
-      return { ok: false, error: { kind: "too_large", bytes: maxBytes } };
+    // Stream-cap the body to maxBytes. If the body exceeded the cap we
+    // proceed with the truncated portion — every structural signal we audit
+    // (title, meta, JSON-LD, headings, semantic landmarks) lives near the top
+    // of the document, so partial HTML is still usable.
+    const { bytes: buf } = await readCapped(res, maxBytes);
+    if (buf.byteLength === 0) {
+      return { ok: false, error: { kind: "network", message: "empty body" } };
     }
 
     const html = new TextDecoder("utf-8", { fatal: false }).decode(buf);
@@ -82,24 +85,42 @@ export async function fetchPage({
   }
 }
 
+interface CappedRead {
+  bytes: Uint8Array;
+  /** True if we stopped reading because we hit the cap. */
+  truncated: boolean;
+}
+
 /**
- * Read at most `maxBytes` from a Response stream. Returns null if the body
- * exceeds the cap (we abort and treat it as too_large).
+ * Read up to `maxBytes` from a Response stream. If the body exceeds the cap
+ * we keep what we already have and stop reading — the structural signals we
+ * audit (title, meta, JSON-LD, headings) live in the first ~50KB on every
+ * site, so a truncated read still yields a usable HTML fragment.
  */
-async function readCapped(res: Response, maxBytes: number): Promise<Uint8Array | null> {
-  if (!res.body) return new Uint8Array();
+async function readCapped(res: Response, maxBytes: number): Promise<CappedRead> {
+  if (!res.body) return { bytes: new Uint8Array(), truncated: false };
   const reader = res.body.getReader();
   const chunks: Uint8Array[] = [];
   let total = 0;
+  let truncated = false;
   try {
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
-      total += value.byteLength;
-      if (total > maxBytes) {
+      const remaining = maxBytes - total;
+      if (remaining <= 0) {
+        truncated = true;
         await reader.cancel();
-        return null;
+        break;
       }
+      if (value.byteLength > remaining) {
+        chunks.push(value.subarray(0, remaining));
+        total += remaining;
+        truncated = true;
+        await reader.cancel();
+        break;
+      }
+      total += value.byteLength;
       chunks.push(value);
     }
   } finally {
@@ -111,7 +132,7 @@ async function readCapped(res: Response, maxBytes: number): Promise<Uint8Array |
     out.set(c, offset);
     offset += c.byteLength;
   }
-  return out;
+  return { bytes: out, truncated };
 }
 
 // Exported for tests; not used in app paths.

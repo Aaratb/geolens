@@ -111,15 +111,18 @@ describe("crawl", () => {
     expect(out.internalPages.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("rejects pages exceeding maxBytes", async () => {
+  it("truncates oversized pages and proceeds with partial body", async () => {
+    // Modern marketing sites routinely exceed 2MB; we cap the read but use
+    // what we got rather than aborting. The first ~50KB has all the
+    // structural signals we audit anyway.
     const huge = "a".repeat(10);
     const fetcher = makeMockFetch({
       "https://acme.example/robots.txt": { body: ROBOTS_ALLOWING },
       [SEED]: { body: huge },
     });
     const out = await crawl({ url: SEED, fetcher, maxBytes: 5, maxInternalPages: 0 });
-    expect(out.homepage).toBeNull();
-    expect(out.errors[0]?.error.kind).toBe("too_large");
+    expect(out.homepage).not.toBeNull();
+    expect(out.homepage?.bytes).toBeLessThanOrEqual(5);
   });
 
   it("rejects non-html content types", async () => {

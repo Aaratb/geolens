@@ -26,7 +26,10 @@ export async function crawl(input: CrawlInput): Promise<CrawlOutput> {
   const maxInternalPages = input.maxInternalPages ?? 5;
   const perPageTimeoutMs = input.perPageTimeoutMs ?? 10_000;
   const totalBudgetMs = input.totalBudgetMs ?? 30_000;
-  const maxBytes = input.maxBytes ?? 2 * 1024 * 1024;
+  // Modern marketing sites routinely ship 3-6MB of inlined HTML/CSS/preload
+  // tags; 2MB used to be enough but many real sites (linear.app, etc.) hit
+  // the cap. 8MB is the new default — still bounded but realistic.
+  const maxBytes = input.maxBytes ?? 8 * 1024 * 1024;
 
   const errors: CrawlOutput["errors"] = [];
   const remainingBudget = () => Math.max(0, totalBudgetMs - (Date.now() - start));

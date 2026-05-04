@@ -143,6 +143,13 @@ function failureCopy(stage: string): { title: string; body: string; suggestion?:
       suggestion: "Double-check the URL and that the page is publicly accessible.",
     };
   }
+  if (stage.startsWith("crawl/too_large")) {
+    return {
+      title: "The page is too big to audit.",
+      body: "We cap each page at 8MB to keep scans fast. Your homepage is over that — usually means a lot of inlined images, fonts, or preload tags that should be split off.",
+      suggestion: "Audit a lighter sub-page (your blog index, a product page) for now.",
+    };
+  }
   if (stage.startsWith("crawl/non_html")) {
     return {
       title: "That URL isn't an HTML page.",
