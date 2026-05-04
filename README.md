@@ -4,7 +4,7 @@
 
 GEOlens audits any public URL the way Lighthouse audits performance — but for the AI search era. It probes ChatGPT, Claude, Perplexity, and Gemini, runs full Google PageSpeed Insights, evaluates AEO hygiene (`llms.txt`, structured data, semantic HTML, AI crawler directives), and ships a streaming, gap-first report with numbered findings (`#GL-NN`).
 
-> Status: early development (Milestone M1, Phase 6). See `.aw_docs/features/geolens/` for the full PRD, spec, ADRs, and design directions.
+> **Status: shipped** — live at [geolens.xyz](https://geolens.xyz). 15-phase `/feature-pro` workflow complete. See `.aw_docs/features/geolens/SHIP_STATUS.md` for the final state and `.aw_docs/features/geolens/CODE_REVIEW.md` for the Phase 7 review outcomes.
 
 ## Stack
 
@@ -107,10 +107,13 @@ We never persist raw HTML. `scan_pages_crawled.signals` stores computed metrics 
 
 ## Roadmap
 
-- **M1 Foundation** — done (this PR)
-- **M2 Scan Engine** — crawler, PSI, 4 LLM probes, hygiene, citability, scoring
-- **M3 Streaming UI** — landing + report + sign-in unlock
-- **M4 Polish + Launch** — share, OG image, methodology page, telemetry, rate limit
-- **v1.5** — fixer agent (Vercel Workflow)
+- ✅ **M1 Foundation** — Next.js scaffold, Drizzle schema, Clerk middleware, design tokens
+- ✅ **M2 Scan Engine** — crawler, PSI, 4 LLM probes via Vercel AI Gateway, hygiene, citability, scoring
+- ✅ **M3 Streaming UI** — editorial landing, dark streaming report, Clerk sign-in unlock, progress trail
+- ✅ **M4 Polish + Launch** — share + OG image, methodology, GDPR privacy, terms, telemetry, rate limit, daily cleanup cron
+- ✅ **Phase 7 Review** — 8 parallel reviewers; 11/11 CRITICALs + 16/23 HIGHs cleared; 7 deferred with triggers documented
+- ✅ **Phase 8 QA** — 112 unit tests, 19 Playwright e2e tests passing against production
+- ⏳ **Vercel Pro upgrade** — needed to unblock scan execution (60s → 300s function timeout). Until then: landing + waitlist work; scans time out cleanly with a `failed` state.
+- ⏳ **v1.5** — fixer agent via Vercel Workflow; waitlist already capturing demand from every gap card.
 
-See `.aw_docs/features/geolens/tasks.md`.
+See `.aw_docs/features/geolens/SHIP_STATUS.md` for full status; `tasks.md` for the original M1–M4 breakdown.

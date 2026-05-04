@@ -2,7 +2,8 @@
   "feature_slug": "geolens",
   "feature_title": "GEOlens (SEO + AEO/GEO Reviewer)",
   "command": "feature-pro",
-  "current_phase": 6,
+  "current_phase": 15,
+  "status": "shipped",
   "phases": {
     "1": "done",
     "2": "done",
@@ -12,24 +13,57 @@
     "5": "done",
     "6": "done",
     "7": "done",
-    "8": "pending",
-    "9": "pending",
-    "10": "pending",
-    "11": "pending",
-    "12": "pending",
-    "13": "pending",
-    "14": "pending",
-    "15": "pending"
+    "8": "done",
+    "9": "done",
+    "10": "skipped_no_failures",
+    "11": "done",
+    "12": "skipped_ghl_specific",
+    "13": "n_a_main_branch",
+    "14": "n_a_already_prod",
+    "15": "done"
   },
   "milestones": {
-    "M1_foundation": "done_pending_install",
-    "M2_scan_engine": "pending",
-    "M3_streaming_ui": "pending",
-    "M4_polish_launch": "pending"
+    "M1_foundation": "done",
+    "M2_scan_engine": "done",
+    "M3_streaming_ui": "done",
+    "M4_polish_launch": "done"
   },
-  "agent_runs": {},
+  "deployment": {
+    "production_url": "https://geolens.xyz",
+    "vercel_project": "aarat97-8978s-projects/geolens",
+    "github_repo": "https://github.com/Aaratb/geolens",
+    "domain_registrar": "Vercel",
+    "plan": "Vercel Hobby",
+    "scan_execution_works": false,
+    "scan_execution_blocker": "Hobby 60s function timeout vs ~90s p95 scan time; upgrade to Pro to unlock"
+  },
+  "test_state": {
+    "unit_tests": 112,
+    "playwright_e2e_tests": 19,
+    "playwright_e2e_passing": "19/19 against production",
+    "lint": "clean",
+    "typecheck": "clean",
+    "build": "green"
+  },
+  "review_state": {
+    "phase_7_findings": {
+      "critical": { "total": 11, "fixed": 11, "deferred": 0 },
+      "high": { "total": 23, "fixed": 16, "deferred": 7 },
+      "medium": { "total": 12, "fixed": 9, "deferred": 3 },
+      "low": { "total": 15, "fixed": 4, "deferred": 11 }
+    },
+    "deliberate_defers": [
+      "REL-H-5 EventSource polling fallback (corp-proxy edge case)",
+      "PERF-H-3 Event-publish batching (premature for v1 scale)",
+      "PERF-H-4 PSI throttling (Hobby has no concurrent scans yet)",
+      "DB-H-2 SSE covering index (jsonb size; full fix is LISTEN/NOTIFY post-Pro)",
+      "REL-H-1 Daily cap race ($0.40 worst-case overrun, not worth tightening)",
+      "S-LOW-2 CSRF on POST /scans (SameSite=Lax handles it)",
+      "S-LOW-4 Anon scan ip_hash bypass on shared NAT (known tradeoff)"
+    ]
+  },
   "decisions": {
-    "stack": "Next.js 16 + TypeScript + Tailwind + shadcn/ui + Vercel AI SDK",
+    "stack": "Next.js 16 + TypeScript + Tailwind v4 + shadcn/ui + Vercel AI SDK v5",
     "seo_engine": "Google PageSpeed Insights API",
     "aeo_engines": ["openai", "anthropic", "perplexity", "gemini"],
     "auth_provider": "clerk",
@@ -37,56 +71,19 @@
     "blob_storage": "vercel_blob",
     "cache_kv": "upstash_redis",
     "ai_routing": "vercel_ai_gateway",
-    "scan_orchestration": "spawn_detach_route_handler_plus_redis_pubsub",
+    "scan_orchestration": "spawn_detach_with_waitUntil_plus_postgres_polling_sse",
     "design_direction": "hybrid_C_landing_A_report",
     "brand_name": "GEOlens",
+    "domain": "geolens.xyz",
     "north_star": "scans_completed",
-    "deploy_target": "vercel_pro"
+    "deploy_target": "vercel_hobby_for_v1"
   },
-  "artifacts": {
-    "1": [],
-    "2": [".aw_docs/features/geolens/requirements.md"],
-    "3": [".aw_docs/features/geolens/prd.md"],
-    "3.5": [".aw_docs/features/geolens/competitive-research.md"],
-    "4": [
-      ".aw_docs/features/geolens/design/directions.md",
-      ".aw_docs/features/geolens/design/landing-direction-a.html",
-      ".aw_docs/features/geolens/design/landing-direction-b.html",
-      ".aw_docs/features/geolens/design/landing-direction-c.html"
-    ],
-    "5": [
-      ".aw_docs/features/geolens/spec.md",
-      ".aw_docs/features/geolens/tasks.md",
-      ".aw_docs/features/geolens/adrs/adr-001-auth.md",
-      ".aw_docs/features/geolens/adrs/adr-002-data-storage.md",
-      ".aw_docs/features/geolens/adrs/adr-003-scan-orchestration.md"
-    ],
-    "6_M1": [
-      "package.json",
-      "tsconfig.json",
-      "next.config.ts",
-      "postcss.config.mjs",
-      "eslint.config.mjs",
-      ".prettierrc.json",
-      ".prettierignore",
-      ".gitignore",
-      ".env.example",
-      ".lintstagedrc.json",
-      "middleware.ts",
-      "drizzle.config.ts",
-      "vitest.config.ts",
-      "vitest.setup.ts",
-      "app/layout.tsx",
-      "app/page.tsx",
-      "app/globals.css",
-      "lib/utils.ts",
-      "lib/utils.test.ts",
-      "lib/ui/theme-provider.tsx",
-      "lib/auth/current-user.ts",
-      "lib/db/schema.ts",
-      "lib/db/client.ts",
-      ".github/workflows/ci.yml",
-      "README.md"
-    ]
-  }
+  "outstanding_action_items": [
+    "Verify IP_HASH_SALT is set in Vercel production env",
+    "Verify DATABASE_URL uses the Neon pooler endpoint (-pooler in hostname)",
+    "Trademark search for 'GEOlens'",
+    "Perplexity Sonar API ToS review for our query pattern",
+    "Set up privacy@geolens.xyz forwarding mailbox",
+    "Upgrade to Vercel Pro to unblock scan execution (60s -> 300s function timeout)"
+  ]
 }
