@@ -137,7 +137,12 @@ describe("generateOrGetFixPack", () => {
       costCents: null,
       updatedAt: new Date("2000-01-01T00:00:00.000Z"),
     });
-    const reclaimed = fixPack({ status: "generating", payload: null, model: null, costCents: null });
+    const reclaimed = fixPack({
+      status: "generating",
+      payload: null,
+      model: null,
+      costCents: null,
+    });
     const testStore = store({
       getByScanId: vi.fn(async () => stale),
       startGenerating: vi.fn(async () => ({ row: reclaimed, started: true })),

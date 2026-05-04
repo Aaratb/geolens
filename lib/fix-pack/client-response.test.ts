@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  parseFixPackGenerateResponse,
-  parseFixPackStatusResponse,
-} from "./client-response";
+import { parseFixPackGenerateResponse, parseFixPackStatusResponse } from "./client-response";
 
 const payload = {
   cards: [

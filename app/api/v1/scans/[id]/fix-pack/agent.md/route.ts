@@ -15,10 +15,7 @@ export const dynamic = "force-dynamic";
 
 const ScanId = z.string().uuid();
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!ScanId.safeParse(id).success) {
     return NextResponse.json({ error: "invalid_scan_id" }, { status: 400 });
@@ -37,10 +34,7 @@ export async function GET(
   }
 
   if (scan.status !== "completed") {
-    return NextResponse.json(
-      { error: "scan_not_completed", status: scan.status },
-      { status: 409 },
-    );
+    return NextResponse.json({ error: "scan_not_completed", status: scan.status }, { status: 409 });
   }
 
   const eligibility = getFixPackEligibility(user);
@@ -54,10 +48,7 @@ export async function GET(
   }
 
   if (pack.status !== "completed") {
-    return NextResponse.json(
-      { error: "fix_pack_not_ready", status: pack.status },
-      { status: 409 },
-    );
+    return NextResponse.json({ error: "fix_pack_not_ready", status: pack.status }, { status: 409 });
   }
 
   let markdown: string;

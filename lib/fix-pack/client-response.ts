@@ -1,12 +1,7 @@
 import { z } from "zod";
 import { FixPackPayloadSchema } from "./schema";
 
-export const FixPackUiStatusSchema = z.enum([
-  "not_generated",
-  "generating",
-  "completed",
-  "failed",
-]);
+export const FixPackUiStatusSchema = z.enum(["not_generated", "generating", "completed", "failed"]);
 
 const CompletedFixPackSchema = FixPackPayloadSchema.extend({
   id: z.string().uuid(),

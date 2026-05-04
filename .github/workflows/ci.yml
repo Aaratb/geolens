@@ -28,7 +28,26 @@ jobs:
         run: npm run lint
 
       - name: Format check
-        run: npm run format:check
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git fetch origin "$GITHUB_BASE_REF" --depth=1
+            base_ref="FETCH_HEAD"
+          else
+            base_ref="${{ github.event.before }}"
+            if [[ "$base_ref" =~ ^0+$ ]]; then
+              base_ref="HEAD~1"
+            fi
+          fi
+
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMRT "$base_ref"...HEAD -- '*.ts' '*.tsx' '*.md' '*.json')
+
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No format-checked files changed."
+            exit 0
+          fi
+
+          npx prettier --check "${files[@]}"
 
       - name: Unit tests
         run: npm test

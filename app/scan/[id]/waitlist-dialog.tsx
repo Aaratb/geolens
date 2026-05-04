@@ -31,7 +31,8 @@ export function WaitlistDialog({ open, onOpenChange, scanId, gapId, gapTitle, so
   const inputRef = useRef<HTMLInputElement>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const userEmail = user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses?.[0]?.emailAddress;
+  const userEmail =
+    user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses?.[0]?.emailAddress;
   const effectiveEmail = isSignedIn && userEmail ? userEmail : email;
 
   async function submit() {
@@ -89,8 +90,8 @@ export function WaitlistDialog({ open, onOpenChange, scanId, gapId, gapTitle, so
             {gapTitle ? (
               <>
                 We&apos;re building a Fix Pack that turns findings like{" "}
-                <span className="font-mono-tabular">{gapTitle}</span> into copy-paste assets and
-                an agent-ready Markdown file. Join the waitlist and we&apos;ll tag this gap to
+                <span className="font-mono-tabular">{gapTitle}</span> into copy-paste assets and an
+                agent-ready Markdown file. Join the waitlist and we&apos;ll tag this gap to
                 prioritize the rollout.
               </>
             ) : (
@@ -104,13 +105,10 @@ export function WaitlistDialog({ open, onOpenChange, scanId, gapId, gapTitle, so
 
         <div className="mt-5 space-y-3">
           {!isLoaded ? (
-            <div className="h-10 surface rounded-md animate-pulse" />
+            <div className="surface h-10 animate-pulse rounded-md" />
           ) : isSignedIn ? (
-            <div
-              className="surface rounded-md px-3 py-2.5 text-sm"
-              style={{ color: "var(--ink)" }}
-            >
-              <div className="font-mono-tabular text-[10px] uppercase tracking-[0.18em] marginalia">
+            <div className="surface rounded-md px-3 py-2.5 text-sm" style={{ color: "var(--ink)" }}>
+              <div className="font-mono-tabular marginalia text-[10px] tracking-[0.18em] uppercase">
                 Joining as
               </div>
               <div className="font-mono-tabular truncate">{userEmail}</div>
@@ -163,7 +161,7 @@ export function WaitlistDialog({ open, onOpenChange, scanId, gapId, gapTitle, so
             )}
           </Button>
 
-          <p className="text-[12px] marginalia">
+          <p className="marginalia text-[12px]">
             One email when there&apos;s news. No spam, no resale, no fluff.
           </p>
         </div>

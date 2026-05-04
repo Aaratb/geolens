@@ -144,7 +144,9 @@ export function FixPackClient({
       const data = parseGenerateResponse(await res.json());
       if (!res.ok || "error" in data) {
         throw new Error(
-          "message" in data ? (data.message ?? "Fix Pack generation failed.") : "Fix Pack generation failed.",
+          "message" in data
+            ? (data.message ?? "Fix Pack generation failed.")
+            : "Fix Pack generation failed.",
         );
       }
       if (data.status === "generating") {
@@ -210,31 +212,31 @@ export function FixPackClient({
               {payload.cards.map((card, index) => (
                 <article key={`${card.displayId}-${index}`} className="surface rounded-xl p-5">
                   <div className="flex items-start gap-4">
-                    <span className="font-mono-tabular text-[11px] marginalia mt-1">
+                    <span className="font-mono-tabular marginalia mt-1 text-[11px]">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="font-mono-tabular text-[10px] uppercase tracking-[0.2em] marginalia">
+                      <div className="font-mono-tabular marginalia text-[10px] tracking-[0.2em] uppercase">
                         {card.displayId} · {card.assetKind.replaceAll("_", " ")}
                       </div>
-                      <h2 className="font-display text-[22px] leading-tight font-semibold mt-2">
+                      <h2 className="font-display mt-2 text-[22px] leading-tight font-semibold">
                         {card.title}
                       </h2>
-                      <p className="text-[14px] marginalia leading-[1.7] mt-3">
+                      <p className="marginalia mt-3 text-[14px] leading-[1.7]">
                         {card.observedEvidence}
                       </p>
-                      <p className="text-[14px] leading-[1.7] mt-3">{card.recommendedChange}</p>
+                      <p className="mt-3 text-[14px] leading-[1.7]">{card.recommendedChange}</p>
                       <div className="mt-4 rounded-lg border border-[var(--rule)] bg-[var(--surface-muted)] p-3">
-                        <pre className="whitespace-pre-wrap break-words font-mono-tabular text-[11px] leading-[1.6] marginalia">
+                        <pre className="font-mono-tabular marginalia text-[11px] leading-[1.6] break-words whitespace-pre-wrap">
                           {card.assetText}
                         </pre>
                       </div>
-                      <div className="grid gap-4 md:grid-cols-2 mt-4">
+                      <div className="mt-4 grid gap-4 md:grid-cols-2">
                         <Checklist title="Checklist" items={card.checklist} checked />
                         <Checklist title="Validation" items={card.validationSteps} />
                       </div>
                       {card.caveat ? (
-                        <p className="text-[12px] marginalia leading-[1.6] mt-4">{card.caveat}</p>
+                        <p className="marginalia mt-4 text-[12px] leading-[1.6]">{card.caveat}</p>
                       ) : null}
                     </div>
                   </div>
@@ -246,23 +248,23 @@ export function FixPackClient({
           )}
         </div>
 
-        <aside className="surface rounded-xl p-5 h-fit lg:sticky lg:top-8">
-          <div className="font-mono-tabular text-[10px] uppercase tracking-[0.22em] marginalia">
+        <aside className="surface h-fit rounded-xl p-5 lg:sticky lg:top-8">
+          <div className="font-mono-tabular marginalia text-[10px] tracking-[0.22em] uppercase">
             Agent Pack
           </div>
-          <h2 className="font-display text-[22px] leading-tight font-semibold mt-2">
+          <h2 className="font-display mt-2 text-[22px] leading-tight font-semibold">
             Turn the scan into agent-ready work.
           </h2>
-          <p className="text-[13px] marginalia leading-[1.7] mt-3">
+          <p className="marginalia mt-3 text-[13px] leading-[1.7]">
             Generate the three highest-leverage fixes, then use the Markdown file in Claude Code,
             Cursor, or `AGENTS.md`.
           </p>
-          <p className="text-[12px] marginalia leading-[1.6] mt-3">
+          <p className="marginalia mt-3 text-[12px] leading-[1.6]">
             Fix cards and the agent file are AI-generated from your scan data. Review before
             applying.
           </p>
           {status === "completed" && eligible ? (
-            <Button asChild variant="accent" className="w-full mt-5">
+            <Button asChild variant="accent" className="mt-5 w-full">
               <a
                 href={downloadHref}
                 onClick={() =>
@@ -285,7 +287,7 @@ export function FixPackClient({
               variant={action.tone === "outline" ? "outline" : "accent"}
               disabled={busy || action.disabled}
               onClick={onPrimaryAction}
-              className="w-full mt-5"
+              className="mt-5 w-full"
             >
               {busy ? "Generating..." : action.label}
             </Button>
@@ -304,7 +306,7 @@ export function FixPackClient({
                     action: "download",
                   })
                 }
-                className="block text-center text-[12px] mt-3 hover:underline"
+                className="mt-3 block text-center text-[12px] hover:underline"
                 style={{ color: "var(--color-accent-soft)" }}
               >
                 Direct download link
@@ -314,7 +316,7 @@ export function FixPackClient({
           ) : null}
           {error ? (
             <div
-              className="rounded-md px-3 py-2 text-[13px] mt-4"
+              className="mt-4 rounded-md px-3 py-2 text-[13px]"
               style={{
                 background: "color-mix(in oklab, var(--color-score-bad) 15%, transparent)",
                 color: "var(--color-score-bad-dark)",
@@ -324,7 +326,7 @@ export function FixPackClient({
             </div>
           ) : null}
           {status === "generating" ? (
-            <p className="text-[12px] marginalia mt-4">
+            <p className="marginalia mt-4 text-[12px]">
               Generation can take a moment. You can keep this tab open; we will refresh the pack
               automatically.
             </p>
@@ -402,12 +404,12 @@ function PromptPanel({
 }) {
   return (
     <article className="surface rounded-xl p-5">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <div className="font-mono-tabular text-[10px] uppercase tracking-[0.22em] marginalia">
+          <div className="font-mono-tabular marginalia text-[10px] tracking-[0.22em] uppercase">
             Copy-paste prompt
           </div>
-          <h2 className="font-display text-[22px] leading-tight font-semibold mt-2">
+          <h2 className="font-display mt-2 text-[22px] leading-tight font-semibold">
             Start your coding agent here.
           </h2>
         </div>
@@ -415,8 +417,8 @@ function PromptPanel({
           {copied ? "Copied" : "Copy prompt"}
         </Button>
       </div>
-      <div className="mt-4 rounded-lg border border-[var(--rule)] bg-[var(--surface-muted)] p-3 max-h-72 overflow-auto">
-        <pre className="whitespace-pre-wrap break-words font-mono-tabular text-[11px] leading-[1.6] marginalia">
+      <div className="mt-4 max-h-72 overflow-auto rounded-lg border border-[var(--rule)] bg-[var(--surface-muted)] p-3">
+        <pre className="font-mono-tabular marginalia text-[11px] leading-[1.6] break-words whitespace-pre-wrap">
           {payload.prompt}
         </pre>
       </div>
@@ -427,15 +429,15 @@ function PromptPanel({
 function InstallPanel({ payload }: { payload: FixPackPayload }) {
   return (
     <div className="rule-t mt-5 pt-5">
-      <div className="font-mono-tabular text-[10px] uppercase tracking-[0.22em] marginalia">
+      <div className="font-mono-tabular marginalia text-[10px] tracking-[0.22em] uppercase">
         Install guide
       </div>
-      <div className="space-y-4 mt-3">
+      <div className="mt-3 space-y-4">
         <InstallStep label="Claude Code" body={payload.install.claudeCode} />
         <InstallStep label="Cursor" body={payload.install.cursor} />
         <InstallStep label="AGENTS.md" body={payload.install.agentsMd} />
       </div>
-      <ul className="space-y-1.5 text-[12px] marginalia mt-4">
+      <ul className="marginalia mt-4 space-y-1.5 text-[12px]">
         {payload.caveats.map((caveat, index) => (
           <li key={`caveat-${index}`}>- {caveat}</li>
         ))}
@@ -447,10 +449,10 @@ function InstallPanel({ payload }: { payload: FixPackPayload }) {
 function InstallStep({ label, body }: { label: string; body: string }) {
   return (
     <div>
-      <div className="font-mono-tabular text-[10px] uppercase tracking-[0.18em] marginalia">
+      <div className="font-mono-tabular marginalia text-[10px] tracking-[0.18em] uppercase">
         {label}
       </div>
-      <p className="text-[12px] leading-[1.6] marginalia mt-1">{body}</p>
+      <p className="marginalia mt-1 text-[12px] leading-[1.6]">{body}</p>
     </div>
   );
 }
@@ -458,13 +460,13 @@ function InstallStep({ label, body }: { label: string; body: string }) {
 function EmptyFixPackState({ eligible }: { eligible: boolean }) {
   return (
     <div className="surface rounded-xl p-6">
-      <div className="font-mono-tabular text-[10px] uppercase tracking-[0.22em] marginalia">
+      <div className="font-mono-tabular marginalia text-[10px] tracking-[0.22em] uppercase">
         {eligible ? "Ready to generate" : "Beta access"}
       </div>
-      <h2 className="font-display text-[24px] leading-tight font-semibold mt-2">
+      <h2 className="font-display mt-2 text-[24px] leading-tight font-semibold">
         {eligible ? "Create the first Fix Pack for this scan." : "Join the Fix Pack waitlist."}
       </h2>
-      <p className="text-[14px] marginalia leading-[1.7] mt-3">
+      <p className="marginalia mt-3 text-[14px] leading-[1.7]">
         {eligible
           ? "GEOlens will turn the scan's top findings into copy-paste assets, validation steps, and an agent-ready Markdown file."
           : "Fix Pack is currently behind an allowlist. Join the list and we will prioritize access for this scan."}
@@ -484,10 +486,10 @@ function Checklist({
 }) {
   return (
     <div>
-      <div className="font-mono-tabular text-[10px] uppercase tracking-[0.2em] marginalia mb-2">
+      <div className="font-mono-tabular marginalia mb-2 text-[10px] tracking-[0.2em] uppercase">
         {title}
       </div>
-      <ul className="space-y-1.5 text-[13px] marginalia">
+      <ul className="marginalia space-y-1.5 text-[13px]">
         {items.map((item, index) => (
           <li key={`${title}-${index}`} className="flex gap-2">
             <span aria-hidden>{checked ? "[ ]" : "-"}</span>

@@ -28,18 +28,14 @@ test.describe("API contract", () => {
   });
 
   test("SSE stream returns 404 for unknown scan (S-CRIT-1 lock-in)", async ({ request }) => {
-    const res = await request.get(
-      "/api/v1/scans/00000000-0000-0000-0000-000000000000/stream",
-    );
+    const res = await request.get("/api/v1/scans/00000000-0000-0000-0000-000000000000/stream");
     expect(res.status()).toBe(404);
   });
 
   test("POST /api/v1/scans/[id]/claim requires auth", async ({ request }) => {
     // Without a Clerk session, claim must 401 (or 403 — both acceptable
     // markers of "you cannot do this anonymously")
-    const res = await request.post(
-      "/api/v1/scans/00000000-0000-0000-0000-000000000000/claim",
-    );
+    const res = await request.post("/api/v1/scans/00000000-0000-0000-0000-000000000000/claim");
     expect([401, 403, 404]).toContain(res.status());
   });
 

@@ -50,15 +50,8 @@
       "generalPurpose: consensus domain lens",
       "generalPurpose: consensus long-horizon lens"
     ],
-    "4": [
-      "platform-design:designer",
-      "ai-voice-design:stitch",
-      "ai-voice-design:ux-researcher"
-    ],
-    "5": [
-      "explore: backend scan contracts",
-      "explore: frontend scan patterns"
-    ],
+    "4": ["platform-design:designer", "ai-voice-design:stitch", "ai-voice-design:ux-researcher"],
+    "5": ["explore: backend scan contracts", "explore: frontend scan patterns"],
     "6": [
       "code-reviewer: slice 4 API/download review",
       "security-reviewer: slice 4 authz and download review",
@@ -95,9 +88,7 @@
       "local docs: docs-i18n artifact",
       "local i18n assessment: no current i18n runtime or catalog"
     ],
-    "10": [
-      "skipped: no active failure signal after Phase 7 repair, Phase 8 QA, and Phase 9 docs"
-    ],
+    "10": ["skipped: no active failure signal after Phase 7 repair, Phase 8 QA, and Phase 9 docs"],
     "11": [
       "setup audit: npm test passed, 148 tests",
       "setup audit: npm run typecheck passed",
@@ -233,9 +224,7 @@
     "status": "approved_after_repair",
     "mode": "parallel_with_repair",
     "review_mode": "parallel",
-    "engines_run": [
-      "parallel-specialist-review"
-    ],
+    "engines_run": ["parallel-specialist-review"],
     "engines_blocked": [
       {
         "engine": "aw-rules-review",
@@ -255,11 +244,7 @@
       "platform-review:reliability-reviewer",
       "platform-review:performance-reviewer"
     ],
-    "waves_executed": [
-      1,
-      2,
-      3
-    ],
+    "waves_executed": [1, 2, 3],
     "evidence_reviewed": [
       "RED blocker suite failed before repair on stale generation, missing parser, missing limiter identity, and migration metadata",
       "22-test focused blocker suite passing after repair",
@@ -286,9 +271,7 @@
     "governance_status": "Phase 7 review completed, blockers repaired, and specialist re-review approved.",
     "readiness_outcome": "Ready to advance to Phase 8 QA/browser verification.",
     "blockers": [],
-    "recommended_next_commands": [
-      "Proceed to Phase 8 QA/browser verification"
-    ],
+    "recommended_next_commands": ["Proceed to Phase 8 QA/browser verification"],
     "resolved_blocking_findings": [
       "DB-BLOCKER-1: Drizzle journal/snapshot metadata now covers 0002-0004 and latest schema baseline",
       "REL-C-1/DB-H-1: stale generating rows are reclaimable after a 10-minute lease",
@@ -435,9 +418,7 @@
       ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
       ".aw_docs/features/agent-waitlist-feature-flag/state.json"
     ],
-    "recommended_next_commands": [
-      "Proceed to Phase 11 Setup Audit / hard gate"
-    ]
+    "recommended_next_commands": ["Proceed to Phase 11 Setup Audit / hard gate"]
   },
   "setup_audit_progress": {
     "stage": "setup_audit",
@@ -473,9 +454,7 @@
       ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
       ".aw_docs/features/agent-waitlist-feature-flag/state.json"
     ],
-    "recommended_next_commands": [
-      "Proceed to Phase 12"
-    ]
+    "recommended_next_commands": ["Proceed to Phase 12"]
   },
   "platform_specialists_progress": {
     "stage": "platform_specialists",
@@ -500,9 +479,7 @@
       ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
       ".aw_docs/features/agent-waitlist-feature-flag/state.json"
     ],
-    "recommended_next_commands": [
-      "Proceed to Phase 13"
-    ]
+    "recommended_next_commands": ["Proceed to Phase 13"]
   },
   "pr_auto_fix_progress": {
     "stage": "pr_auto_fix",
@@ -522,9 +499,7 @@
       ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
       ".aw_docs/features/agent-waitlist-feature-flag/state.json"
     ],
-    "recommended_next_commands": [
-      "Proceed to Phase 14"
-    ]
+    "recommended_next_commands": ["Proceed to Phase 14"]
   },
   "staging_progress": {
     "stage": "staging_link",

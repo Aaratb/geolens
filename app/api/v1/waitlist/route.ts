@@ -37,7 +37,10 @@ export async function POST(req: NextRequest) {
   const limit = await limitWaitlist(ipHash);
   if (!limit.ok) {
     return NextResponse.json(
-      { error: "rate_limited", message: "Too many waitlist signups from this IP. Try again in an hour." },
+      {
+        error: "rate_limited",
+        message: "Too many waitlist signups from this IP. Try again in an hour.",
+      },
       { status: 429 },
     );
   }

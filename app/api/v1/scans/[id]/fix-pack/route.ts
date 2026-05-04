@@ -3,7 +3,11 @@ import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { canAccessScan, type FixPackScanHeader } from "@/lib/fix-pack/access";
 import { getFixPackEligibility } from "@/lib/fix-pack/eligibility";
-import { generateOrGetFixPack, InvalidPersistedFixPackError, safeGenerationError } from "@/lib/fix-pack/service";
+import {
+  generateOrGetFixPack,
+  InvalidPersistedFixPackError,
+  safeGenerationError,
+} from "@/lib/fix-pack/service";
 import { parseFixPackPayload, type FixPackPayload } from "@/lib/fix-pack/schema";
 import { getFixPackByScanId } from "@/lib/fix-pack/store";
 import { extractIp, hashIp, limitFixPackGeneration } from "@/lib/rate-limit";
@@ -19,19 +23,13 @@ const ScanId = z.string().uuid();
 
 function assertCompletedScan(scan: FixPackScanHeader): NextResponse | null {
   if (scan.status !== "completed") {
-    return NextResponse.json(
-      { error: "scan_not_completed", status: scan.status },
-      { status: 409 },
-    );
+    return NextResponse.json({ error: "scan_not_completed", status: scan.status }, { status: 409 });
   }
 
   return null;
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!ScanId.safeParse(id).success) {
     return NextResponse.json({ error: "invalid_scan_id" }, { status: 400 });
@@ -94,10 +92,7 @@ export async function GET(
   });
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const body = Body.safeParse(await req.json().catch(() => ({})));
   if (!body.success) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
