@@ -11,6 +11,7 @@
 import type { HygieneCheck } from "../types";
 import { DEFAULT_USER_AGENT } from "../../crawl/types";
 import { selfFetchHeaders } from "../../crawl/fetch-helpers";
+import { isSelfHost, readPublicFile } from "../../crawl/self-snapshot";
 
 interface CheckOptions {
   homepage: string;
@@ -98,6 +99,14 @@ async function fetchText(
   fetcher: typeof fetch,
   userAgent: string,
 ): Promise<{ ok: true; text: string; status: number } | { ok: false; status: number }> {
+  // Self-host short-circuit: read our own public/<file> directly.
+  if (isSelfHost(url)) {
+    const path = new URL(url).pathname.slice(1);
+    const text = readPublicFile(path);
+    if (text !== null) return { ok: true, text, status: 200 };
+    return { ok: false, status: 404 };
+  }
+
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 5_000);

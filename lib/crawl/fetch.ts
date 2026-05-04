@@ -5,6 +5,7 @@
 import { load } from "cheerio";
 import { DEFAULT_USER_AGENT, type FetchResult } from "./types";
 import { selfFetchHeaders } from "./fetch-helpers";
+import { getSelfSnapshot, isSelfHost } from "./self-snapshot";
 
 interface FetchOptions {
   url: string;
@@ -24,6 +25,27 @@ export async function fetchPage({
   fetcher = globalThis.fetch,
 }: FetchOptions): Promise<FetchResult> {
   const start = Date.now();
+
+  // Self-host short-circuit: when the target is our own production alias,
+  // Vercel's edge routing fails the self-loop. Read our own bundled HTML
+  // instead so dogfooding works.
+  if (isSelfHost(url)) {
+    const html = getSelfSnapshot(url);
+    const $ = load(html);
+    return {
+      ok: true,
+      page: {
+        url,
+        finalUrl: url,
+        statusCode: 200,
+        bytes: html.length,
+        fetchMs: Date.now() - start,
+        contentType: "text/html; charset=utf-8",
+        $,
+      },
+    };
+  }
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
