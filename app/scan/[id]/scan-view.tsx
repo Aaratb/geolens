@@ -20,10 +20,13 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
   const state = useScanStream(scanId);
   const { isSignedIn, isLoaded } = useUser();
 
-  // Claim anonymous scan after sign-in completes.
+  // Claim anonymous scan after sign-in completes. Log failures so they're
+  // observable rather than silently swallowed. (Phase 7 review: TS-MED-1)
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
-    fetch(`/api/v1/scans/${scanId}/claim`, { method: "POST" }).catch(() => {});
+    fetch(`/api/v1/scans/${scanId}/claim`, { method: "POST" }).catch((err) => {
+      console.warn("[scan] claim failed", err);
+    });
   }, [isLoaded, isSignedIn, scanId]);
 
   const brand = state.brandName ?? initialBrand;

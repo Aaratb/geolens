@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toneFor } from "@/lib/score/tone";
 import type { ScanStreamState } from "@/lib/hooks/use-scan-stream";
 
 export function ScoreTiles({ state }: { state: ScanStreamState }) {
@@ -9,12 +10,22 @@ export function ScoreTiles({ state }: { state: ScanStreamState }) {
     <div className="grid grid-cols-3 gap-3">
       <Tile label="SEO score" value={state.scoreSeo} suffix="" />
       <Tile label="AEO score" value={state.scoreAeo} suffix="" />
-      <Tile label="Citation rate" value={state.citationRatePct} suffix="%" />
+      <Tile label="Citation rate" value={state.citationRatePct} suffix="%" kind="rate" />
     </div>
   );
 }
 
-function Tile({ label, value, suffix }: { label: string; value: number | null; suffix: string }) {
+function Tile({
+  label,
+  value,
+  suffix,
+  kind = "score",
+}: {
+  label: string;
+  value: number | null;
+  suffix: string;
+  kind?: "score" | "rate";
+}) {
   if (value === null) {
     return (
       <div className="surface rounded-xl p-4">
@@ -23,7 +34,7 @@ function Tile({ label, value, suffix }: { label: string; value: number | null; s
       </div>
     );
   }
-  const tone = label === "Citation rate" ? toneFor(value, 70, 40) : toneFor(value, 80, 50);
+  const tone = toneFor(value, kind);
   return (
     <div className="surface rounded-xl p-4">
       <div className="font-mono-tabular text-[11px] uppercase tracking-wider marginalia">{label}</div>
@@ -39,12 +50,6 @@ function Tile({ label, value, suffix }: { label: string; value: number | null; s
       </div>
     </div>
   );
-}
-
-function toneFor(v: number, good: number, ok: number): { label: string; color: string } {
-  if (v >= good) return { label: "strong", color: "var(--color-score-good-dark)" };
-  if (v >= ok) return { label: "improving", color: "var(--color-score-warn-dark)" };
-  return { label: "weak", color: "var(--color-score-bad-dark)" };
 }
 
 function CountUp({ to }: { to: number }) {

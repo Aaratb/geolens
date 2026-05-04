@@ -1,6 +1,7 @@
 /**
  * URL hygiene: validation, normalization, internal-link detection.
  */
+import { lookup } from "node:dns/promises";
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
 
@@ -79,6 +80,37 @@ export function resolveAgainst(homepage: string, href: string): string | null {
     return u.toString();
   } catch {
     return null;
+  }
+}
+
+/**
+ * Phase 7 review S-MED-2: defend against SSRF where a hostname resolves to
+ * a private IP (RFC1918, link-local, loopback). Caller should run this on
+ * any user-submitted URL before fetching. Returns true if the host is safe.
+ */
+const PRIVATE_IPV4 = [
+  /^10\./,
+  /^127\./,
+  /^169\.254\./, // AWS / GCP metadata service link-local
+  /^172\.(1[6-9]|2[0-9]|3[0-1])\./,
+  /^192\.168\./,
+  /^0\./,
+];
+
+export async function hostResolvesToPublicIp(hostname: string): Promise<boolean> {
+  try {
+    const records = await lookup(hostname, { all: true });
+    for (const r of records) {
+      if (r.family === 4 && PRIVATE_IPV4.some((re) => re.test(r.address))) return false;
+      if (r.family === 6 && (r.address === "::1" || r.address.startsWith("fc") || r.address.startsWith("fd") || r.address.startsWith("fe80"))) {
+        return false;
+      }
+    }
+    return true;
+  } catch {
+    // DNS failure: don't block here, the actual fetch will fail with a clear
+    // network error and we record it on the scan.
+    return true;
   }
 }
 

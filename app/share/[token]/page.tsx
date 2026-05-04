@@ -10,6 +10,7 @@ import { notFound } from "next/navigation";
 import { resolveShareToken } from "@/lib/scan/share";
 import { getScanWithDetails } from "@/lib/scan/queries";
 import { GapCard } from "@/app/scan/[id]/gap-card";
+import { LensMark } from "@/components/brand/lens-mark";
 import type { Gap } from "@/lib/score/gaps";
 
 export const dynamic = "force-dynamic";
@@ -153,24 +154,6 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
         </section>
       </main>
     </div>
-  );
-}
-
-function LensMark() {
-  return (
-    <span
-      className="w-5 h-5 rounded-full grid place-items-center shrink-0"
-      style={{
-        background:
-          "radial-gradient(circle at 50% 50%, var(--color-accent) 0%, var(--color-accent-deep) 35%, transparent 70%)",
-        boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.85)",
-      }}
-    >
-      <span
-        className="w-1 h-1 rounded-full"
-        style={{ background: "#fff", boxShadow: "0 0 8px rgba(255,255,255,0.6)" }}
-      />
-    </span>
   );
 }
 

@@ -75,7 +75,7 @@ export async function setScanFailed(
 }
 
 export interface ScanFinalUpdate {
-  scoreSeo: number;
+  scoreSeo: number | null;
   scoreAeo: number;
   scoreVisibility: number;
   scoreHygiene: number;

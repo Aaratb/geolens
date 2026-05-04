@@ -62,7 +62,7 @@ export interface RunScanInput {
 }
 
 export interface RunScanOutput {
-  scoreSeo: number;
+  scoreSeo: number | null;
   scoreAeo: number;
   totalPages: number;
   durationMs: number;
@@ -164,10 +164,14 @@ export async function runScan(input: RunScanInput): Promise<RunScanOutput> {
       weightedSeo: u.result.weightedSeo,
     });
   }
-  // Aggregate SEO score = average of weighted SEO scores across pages
-  const overallSeo =
+  // Aggregate SEO score = average of weighted SEO scores across pages.
+  // If all PSI calls failed, surface null instead of 0 — a 0 score is a real
+  // measurement (very bad site), null means "we couldn't measure". The UI
+  // reducer + report handle the null case as a "skipped" pill.
+  // (Phase 7 review: REL-H-6)
+  const overallSeo: number | null =
     usablePsi.length === 0
-      ? 0
+      ? null
       : Math.round(usablePsi.reduce((s, u) => s + u.result.weightedSeo, 0) / usablePsi.length);
 
   // 5. Hygiene + citability (homepage)

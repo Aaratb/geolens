@@ -17,7 +17,7 @@ import {
 import { fetchPage } from "./fetch";
 import { fetchRobots } from "./robots";
 import { discoverInternalPages } from "./discover";
-import { normalizeUrl } from "./url";
+import { hostResolvesToPublicIp, normalizeUrl } from "./url";
 
 export async function crawl(input: CrawlInput): Promise<CrawlOutput> {
   const start = Date.now();
@@ -42,6 +42,16 @@ export async function crawl(input: CrawlInput): Promise<CrawlOutput> {
   const url = normalizeUrl(input.url);
   if (!url) {
     errors.push({ url: input.url, error: { kind: "invalid_url", reason: "could not normalize" } });
+    out.totalMs = Date.now() - start;
+    return out;
+  }
+
+  // Phase 7 review S-MED-2: SSRF guard. Reject URLs whose hostname resolves
+  // to a private IP range. This catches `localtest.me` (DNS-resolves to
+  // 127.0.0.1) and any internal hostname that survived URL parsing.
+  const hostname = new URL(url).hostname;
+  if (!(await hostResolvesToPublicIp(hostname))) {
+    errors.push({ url, error: { kind: "invalid_url", reason: "private-network host" } });
     out.totalMs = Date.now() - start;
     return out;
   }

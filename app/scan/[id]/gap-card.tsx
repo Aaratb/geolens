@@ -33,6 +33,11 @@ export function GapCard({ gap, scanId }: { gap: Gap; scanId?: string }) {
             </span>
             {gap.effort ? <span>· effort {gap.effort}</span> : null}
             {gap.scoreImpact ? <span>· +{gap.scoreImpact} pts</span> : null}
+            {gap.category === "engine" ? (
+              <span title="This finding is derived from AI engine probe responses, which may be inaccurate or biased.">
+                · AI-derived
+              </span>
+            ) : null}
           </div>
         </div>
         <button

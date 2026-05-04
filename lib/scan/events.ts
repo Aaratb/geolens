@@ -33,7 +33,8 @@ export type ScanEvent =
     }
   | {
       type: "scores.computed";
-      scoreSeo: number;
+      // scoreSeo can be null when all PSI calls fail (REL-H-6).
+      scoreSeo: number | null;
       scoreAeo: number;
       scoreVisibility: number;
       scoreHygiene: number;

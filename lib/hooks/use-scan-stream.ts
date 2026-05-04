@@ -169,8 +169,8 @@ export function useScanStream(scanId: string | null): ScanStreamState {
       "scan.timeout",
       "budget.tripped",
     ];
-    for (const t of types) es.addEventListener(t, handler as unknown as EventListener);
-    es.addEventListener("message", handler as unknown as EventListener);
+    for (const t of types) es.addEventListener(t, handler as EventListener);
+    es.addEventListener("message", handler as EventListener);
 
     es.addEventListener("error", () => {
       // The browser reconnects automatically on recoverable errors. Only mark
@@ -178,7 +178,7 @@ export function useScanStream(scanId: string | null): ScanStreamState {
     });
 
     return () => {
-      for (const t of types) es.removeEventListener(t, handler as unknown as EventListener);
+      for (const t of types) es.removeEventListener(t, handler as EventListener);
       es.close();
     };
   }, [scanId]);

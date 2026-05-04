@@ -69,10 +69,12 @@ export async function POST(
     })
     .onConflictDoNothing();
 
+  // Phase 7 review S-MED-3: don't write email PII to telemetry; the email
+  // is already persisted in waitlist_entries (purpose-built table).
   track({
     event: "pdf.export.queued",
     userId: user?.id ?? null,
-    props: { scanId: scan.id, email },
+    props: { scanId: scan.id, hasEmail: true },
   });
 
   return NextResponse.json({

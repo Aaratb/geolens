@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getScanHeader } from "@/lib/scan/queries";
+import { LensMark } from "@/components/brand/lens-mark";
 import { ScanView } from "./scan-view";
 
 export const dynamic = "force-dynamic";
@@ -72,20 +73,3 @@ function Masthead({
   );
 }
 
-function LensMark() {
-  return (
-    <span
-      className="w-5 h-5 rounded-full grid place-items-center shrink-0"
-      style={{
-        background:
-          "radial-gradient(circle at 50% 50%, var(--color-accent) 0%, var(--color-accent-deep) 35%, transparent 70%)",
-        boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.85)",
-      }}
-    >
-      <span
-        className="w-1 h-1 rounded-full"
-        style={{ background: "#fff", boxShadow: "0 0 8px rgba(255,255,255,0.6)" }}
-      />
-    </span>
-  );
-}

@@ -69,10 +69,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Phase 7 review S-MED-4: don't log full share token; prefix only.
   track({
     event: "share.link.created",
     userId: createdBy,
-    props: { scanId: scan.id, token },
+    props: { scanId: scan.id, tokenPrefix: token.slice(0, 4) },
   });
 
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(req.url).origin;
