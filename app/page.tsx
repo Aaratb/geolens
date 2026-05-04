@@ -61,9 +61,8 @@ export default function HomePage() {
         </div>
 
         <div className="marginalia mt-3 flex flex-wrap items-center gap-x-6 gap-y-1 text-[12px]">
-          <span><span className="font-mono-tabular">64</span> · average AEO score in our index</span>
-          <span><span className="font-mono-tabular">23%</span> · sites with valid llms.txt</span>
-          <span><span className="font-mono-tabular">0.0</span> · cost to begin</span>
+          <span>Free executive summary · sign in to unlock the full report</span>
+          <span>· No credit card</span>
         </div>
 
         <Specimen />

@@ -23,10 +23,14 @@ const chain: ChainStub = {
 };
 
 export function stubDb(): Db {
-  return {
+  const stub = {
     update: () => chain,
     insert: () => chain,
     select: () => chain,
     delete: () => chain,
-  } as unknown as Db;
+    // transaction(callback) immediately invokes the callback with the same
+    // stub so chained writes inside a tx are no-ops in tests.
+    transaction: async <T>(cb: (tx: unknown) => Promise<T>): Promise<T> => cb(stub),
+  };
+  return stub as unknown as Db;
 }

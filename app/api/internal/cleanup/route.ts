@@ -8,21 +8,15 @@ import { NextResponse, type NextRequest } from "next/server";
 import { and, isNull, lt, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { scans, shareTokens } from "@/lib/db/schema";
+import { isAuthorizedCron } from "@/lib/auth/cron";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const RETENTION_DAYS = 30;
 
-function authorized(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const header = req.headers.get("authorization") ?? "";
-  return header === `Bearer ${secret}`;
-}
-
 export async function GET(req: NextRequest) {
-  if (!authorized(req)) {
+  if (!isAuthorizedCron(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

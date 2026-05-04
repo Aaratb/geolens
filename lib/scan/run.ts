@@ -12,6 +12,7 @@
  *   - Per-scan ceiling: if probes' running cost crosses, future probes are
  *     short-circuited to "skipped".
  */
+import { db as defaultDb } from "@/lib/db/client";
 import { crawl, normalizeUrl, canonicalUrlKey } from "@/lib/crawl";
 import { runPsi } from "@/lib/audits/psi";
 import { runHygieneChecks } from "@/lib/audits/hygiene";
@@ -262,33 +263,35 @@ export async function runScan(input: RunScanInput): Promise<RunScanOutput> {
   });
   await sink.publish({ type: "gaps.ranked", topThree, allGaps });
 
-  // 9. Persist findings + probes + pages
-  await persistCrawledPages(input.scanId, allPages, input.db);
-  await persistProbes(probeResults, input.db);
-  await persistGaps(input.scanId, allGaps, input.db);
-
-  // 10. Record spend + finalize
+  // 9. Persist findings + probes + pages + final scores in a single
+  //    transaction. Without this, a crash between writes leaves the scan
+  //    permanently stuck in "running" with partial data.
+  //    (Phase 7 review: DB-CRIT-1 / REL-H-3)
   await spend(costCents);
   const durationMs = Date.now() - start;
 
-  await setScanCompleted(
-    input.scanId,
-    {
-      scoreSeo: overallSeo,
-      scoreAeo: aeo.score,
-      scoreVisibility: aeo.visibility,
-      scoreHygiene: aeo.hygiene,
-      scoreCitability: aeo.citability,
-      citationRatePct: aeo.citationRatePct,
-      sovPct: aeo.sovPct,
-      brandName: ctx.brandName,
-      category: ctx.category,
-      totalPages: allPages.length,
-      durationMs,
-      costCents,
-    },
-    input.db,
-  );
+  const finalUpdate = {
+    scoreSeo: overallSeo,
+    scoreAeo: aeo.score,
+    scoreVisibility: aeo.visibility,
+    scoreHygiene: aeo.hygiene,
+    scoreCitability: aeo.citability,
+    citationRatePct: aeo.citationRatePct,
+    sovPct: aeo.sovPct,
+    brandName: ctx.brandName,
+    category: ctx.category,
+    totalPages: allPages.length,
+    durationMs,
+    costCents,
+  };
+
+  const baseDb = input.db ?? defaultDb;
+  await baseDb.transaction(async (tx) => {
+    await persistCrawledPages(input.scanId, allPages, tx);
+    await persistProbes(probeResults, tx);
+    await persistGaps(input.scanId, allGaps, tx);
+    await setScanCompleted(input.scanId, finalUpdate, tx);
+  });
 
   await sink.publish({
     type: "scan.completed",

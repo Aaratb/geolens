@@ -6,7 +6,7 @@
  * not on Postgres directly, so tests can pass an in-memory sink.
  */
 import { eq, sql } from "drizzle-orm";
-import { db as defaultDb, type Db } from "@/lib/db/client";
+import { db as defaultDb, type Db, type DbOrTx } from "@/lib/db/client";
 import {
   scans,
   scanEvents,
@@ -55,7 +55,7 @@ export function memoryEventSink(): EventSink & { events: ScanEvent[] } {
 export async function setScanRunning(
   scanId: string,
   stage: string,
-  db = defaultDb,
+  db: DbOrTx = defaultDb,
 ): Promise<void> {
   await db
     .update(scans)
@@ -66,7 +66,7 @@ export async function setScanRunning(
 export async function setScanFailed(
   scanId: string,
   reason: string,
-  db = defaultDb,
+  db: DbOrTx = defaultDb,
 ): Promise<void> {
   await db
     .update(scans)
@@ -92,7 +92,7 @@ export interface ScanFinalUpdate {
 export async function setScanCompleted(
   scanId: string,
   update: ScanFinalUpdate,
-  db = defaultDb,
+  db: DbOrTx = defaultDb,
 ): Promise<void> {
   await db
     .update(scans)
@@ -108,7 +108,7 @@ export async function setScanCompleted(
 export async function persistGaps(
   scanId: string,
   gaps: Gap[],
-  db = defaultDb,
+  db: DbOrTx = defaultDb,
 ): Promise<void> {
   if (gaps.length === 0) return;
   await db.insert(scanFindings).values(
@@ -131,7 +131,7 @@ export async function persistGaps(
 
 export async function persistProbes(
   probes: ProbeResult[],
-  db = defaultDb,
+  db: DbOrTx = defaultDb,
 ): Promise<void> {
   if (probes.length === 0) return;
   await db.insert(scanEngineProbes).values(
@@ -159,7 +159,7 @@ export async function persistProbes(
 export async function persistCrawledPages(
   scanId: string,
   pages: CrawledPage[],
-  db = defaultDb,
+  db: DbOrTx = defaultDb,
 ): Promise<void> {
   if (pages.length === 0) return;
   await db.insert(scanPagesCrawled).values(

@@ -15,10 +15,14 @@ export async function resolveShareToken(token: string): Promise<{ scanId: string
     .limit(1);
   if (!row) return null;
   if (row.expiresAt && row.expiresAt < new Date()) return null;
-  // Best-effort view counter
+  // Best-effort view counter. Catch the rejection so a Neon hiccup doesn't
+  // crash the share page. (Phase 7 review: REL-C-2)
   void db
     .update(shareTokens)
     .set({ views: sql`${shareTokens.views} + 1` })
-    .where(eq(shareTokens.token, token));
+    .where(eq(shareTokens.token, token))
+    .catch((err) => {
+      console.warn("[share] view-counter increment failed", err);
+    });
   return { scanId: row.scanId };
 }

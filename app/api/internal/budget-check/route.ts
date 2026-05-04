@@ -10,18 +10,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { Redis } from "@upstash/redis";
 import { DAILY_BUDGET_CENTS } from "@/lib/scan/budget";
+import { isAuthorizedCron } from "@/lib/auth/cron";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function authorized(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return req.headers.get("authorization") === `Bearer ${secret}`;
-}
-
 export async function GET(req: NextRequest) {
-  if (!authorized(req)) {
+  if (!isAuthorizedCron(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

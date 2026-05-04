@@ -9,6 +9,7 @@
  * to scan_events as they happen; the SSE endpoint consumes from there.
  */
 import { NextResponse, type NextRequest } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { z } from "zod";
 import { db } from "@/lib/db/client";
 import { scans } from "@/lib/db/schema";
@@ -96,17 +97,20 @@ export async function POST(req: NextRequest) {
     props: { scanId, hostname, anonymous: !user },
   });
 
-  // Fire-and-forget. Vercel keeps the function alive until the spawned promise
-  // resolves OR maxDuration expires. We catch + persist failure so the scan
-  // never silently dies.
-  runScan({ scanId, url }).catch(async (err) => {
-    console.error(`[scan ${scanId}] run failed`, err);
-    try {
-      await setScanFailed(scanId, "uncaught-error");
-    } catch (persistErr) {
-      console.error(`[scan ${scanId}] failed to persist failure state`, persistErr);
-    }
-  });
+  // Spawn the worker behind waitUntil() so Vercel keeps the instance alive
+  // until the scan completes. Without this, the platform may freeze or evict
+  // the function after the response is returned, killing in-flight scans.
+  // (Phase 7 review: ARCH-S-1 / REL-C-1)
+  waitUntil(
+    runScan({ scanId, url }).catch(async (err) => {
+      console.error(`[scan ${scanId}] run failed`, err);
+      try {
+        await setScanFailed(scanId, "uncaught-error");
+      } catch (persistErr) {
+        console.error(`[scan ${scanId}] failed to persist failure state`, persistErr);
+      }
+    }),
+  );
 
   return NextResponse.json({ scanId, url }, { status: 202 });
 }

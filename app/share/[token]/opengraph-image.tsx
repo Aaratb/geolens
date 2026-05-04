@@ -27,6 +27,21 @@ export default async function OpengraphImage({ params }: { params: { token: stri
   const auditNo =
     scan?.id?.split("-")[0]?.toUpperCase().slice(0, 8) ?? "GEOLENS";
 
+  // Cache aggressively at the edge — share-token URLs are immutable once the
+  // scan completes (no edits, no token reuse). Social-media crawlers each
+  // hit the OG image independently; without caching every Twitter/Slack/
+  // LinkedIn preview regenerates the image. (Phase 7 review: PERF-CRIT-1)
+  const isComplete = scan?.status === "completed";
+  const headers: Record<string, string> = isComplete
+    ? {
+        // Public, immutable, 7-day edge + browser cache, 30-day stale-while-revalidate.
+        "cache-control": "public, max-age=604800, s-maxage=604800, stale-while-revalidate=2592000, immutable",
+      }
+    : {
+        // Don't cache an in-flight or missing scan — the image content will change.
+        "cache-control": "public, max-age=0, s-maxage=60, must-revalidate",
+      };
+
   return new ImageResponse(
     (
       <div
@@ -136,7 +151,7 @@ export default async function OpengraphImage({ params }: { params: { token: stri
         </div>
       </div>
     ),
-    { ...size },
+    { ...size, headers },
   );
 }
 

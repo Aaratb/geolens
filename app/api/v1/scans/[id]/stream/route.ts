@@ -11,6 +11,8 @@
 import { and, eq, gt, asc } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { scanEvents, scans } from "@/lib/db/schema";
+import { extractIp, hashIp } from "@/lib/rate-limit";
+import { getCurrentUser } from "@/lib/auth/current-user";
 
 export const maxDuration = 300;
 export const runtime = "nodejs";
@@ -27,9 +29,24 @@ export async function GET(
   const { id: scanId } = await params;
 
   // Verify scan exists; otherwise 404 immediately
-  const [scan] = await db.select({ id: scans.id, status: scans.status }).from(scans).where(eq(scans.id, scanId)).limit(1);
+  const [scan] = await db
+    .select({ id: scans.id, status: scans.status, userId: scans.userId, ipHash: scans.ipHash })
+    .from(scans)
+    .where(eq(scans.id, scanId))
+    .limit(1);
   if (!scan) {
     return new Response("not found", { status: 404 });
+  }
+
+  // Authorization (Phase 7 review: S-CRIT-1).
+  // SSE leaks the full scan including paywalled drill-down events. Restrict
+  // the stream to the scan owner: signed-in user OR anon-from-same-IP.
+  const user = await getCurrentUser();
+  const ipHash = hashIp(extractIp(req.headers));
+  const isOwner = user && scan.userId === user.id;
+  const isAnonOwner = !scan.userId && scan.ipHash === ipHash;
+  if (!isOwner && !isAnonOwner) {
+    return new Response("forbidden", { status: 403 });
   }
 
   const lastEventIdHeader = req.headers.get("last-event-id");
