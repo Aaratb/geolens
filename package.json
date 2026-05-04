@@ -15,6 +15,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cost": "vitest run lib/scan/cost.test.ts",
+    "e2e": "playwright test",
+    "e2e:prod": "PLAYWRIGHT_BASE_URL=https://geolens.xyz playwright test --project=chromium-desktop",
+    "e2e:install": "playwright install chromium",
+    "e2e:ui": "playwright test --ui",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -55,6 +59,7 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^16.2.4",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.0.0",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.0.0",

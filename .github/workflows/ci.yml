@@ -59,3 +59,25 @@ jobs:
             git diff drizzle/
             exit 1
           fi
+
+  e2e-prod:
+    name: e2e smoke (production)
+    runs-on: ubuntu-latest
+    # Only run on push to main — keeps PRs fast and prevents leaking
+    # PR-author secrets to a production hit.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium --with-deps
+      - run: npm run e2e:prod
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

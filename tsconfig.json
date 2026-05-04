@@ -49,6 +49,9 @@
     "drizzle",
     ".aw",
     ".aw_docs",
-    "scripts"
+    "scripts",
+    "e2e",
+    "playwright-report",
+    "test-results"
   ]
 }

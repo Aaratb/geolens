@@ -51,4 +51,10 @@ drizzle/meta/_journal.json.swp
 .aw
 .aw_docs/cache
 .aw_docs/runs
+
+# Playwright
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
 .env*.local
