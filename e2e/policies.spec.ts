@@ -31,12 +31,12 @@ test("terms page renders", async ({ page }) => {
   await expect(page.getByText(/Liability/i)).toBeVisible();
 });
 
-test("sitemap is served", async ({ request }) => {
+test("sitemap is served", async ({ request, baseURL }) => {
   const res = await request.get("/sitemap.xml");
   expect(res.ok()).toBe(true);
   const body = await res.text();
   expect(body).toContain("<urlset");
-  expect(body).toContain("https://");
+  expect(body).toContain(new URL(baseURL ?? "http://localhost:3000").origin);
 });
 
 test("robots.txt is served and covers AI crawlers", async ({ request }) => {

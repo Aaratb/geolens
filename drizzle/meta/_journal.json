@@ -15,6 +15,27 @@
       "when": 1777853725385,
       "tag": "0001_add_scan_events",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777882670285,
+      "tag": "0002_tier2_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777882670286,
+      "tag": "0003_check_constraints",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777882670287,
+      "tag": "0004_add_scan_fix_packs",
+      "breakpoints": true
     }
   ]
 }

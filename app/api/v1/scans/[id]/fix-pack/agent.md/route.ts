@@ -8,15 +8,22 @@ import { getFixPackByScanId } from "@/lib/fix-pack/store";
 import { extractIp, hashIp } from "@/lib/rate-limit";
 import { getScanHeader } from "@/lib/scan/queries";
 import { track } from "@/lib/telemetry/track";
+import { z } from "zod";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const ScanId = z.string().uuid();
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  if (!ScanId.safeParse(id).success) {
+    return NextResponse.json({ error: "invalid_scan_id" }, { status: 400 });
+  }
+
   const user = await getCurrentUser();
   const ipHash = hashIp(extractIp(req.headers));
   const scan = await getScanHeader(id);

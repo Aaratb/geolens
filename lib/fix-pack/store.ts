@@ -1,6 +1,8 @@
-import { eq } from "drizzle-orm";
+import { and, eq, lt, or } from "drizzle-orm";
 import { db, type DbOrTx } from "@/lib/db/client";
 import { scanFixPacks, type ScanFixPack } from "@/lib/db/schema";
+
+export const STALE_FIX_PACK_GENERATION_MS = 10 * 60 * 1000;
 
 export async function getFixPackByScanId(
   scanId: string,
@@ -24,6 +26,7 @@ export async function startGeneratingFixPack(
   client: DbOrTx = db,
 ): Promise<{ row: ScanFixPack; started: boolean }> {
   const now = new Date();
+  const staleBefore = new Date(now.getTime() - STALE_FIX_PACK_GENERATION_MS);
   const [row] = await client
     .insert(scanFixPacks)
     .values({
@@ -39,10 +42,16 @@ export async function startGeneratingFixPack(
       set: {
         requestedBy: input.requestedBy ?? null,
         status: "generating",
+        payload: null,
         error: null,
+        model: null,
+        costCents: null,
         updatedAt: now,
       },
-      where: eq(scanFixPacks.status, "failed"),
+      where: or(
+        eq(scanFixPacks.status, "failed"),
+        and(eq(scanFixPacks.status, "generating"), lt(scanFixPacks.updatedAt, staleBefore)),
+      ),
     })
     .returning();
 

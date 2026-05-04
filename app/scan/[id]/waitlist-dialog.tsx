@@ -88,14 +88,15 @@ export function WaitlistDialog({ open, onOpenChange, scanId, gapId, gapTitle, so
           <DialogDescription>
             {gapTitle ? (
               <>
-                We&apos;re building an autonomous agent that fixes findings like{" "}
-                <span className="font-mono-tabular">{gapTitle}</span> end-to-end. Join the waitlist
-                and we&apos;ll tag this gap to prioritize the rollout.
+                We&apos;re building a Fix Pack that turns findings like{" "}
+                <span className="font-mono-tabular">{gapTitle}</span> into copy-paste assets and
+                an agent-ready Markdown file. Join the waitlist and we&apos;ll tag this gap to
+                prioritize the rollout.
               </>
             ) : (
               <>
-                We&apos;re building an autonomous agent that fixes the findings GEOlens surfaces.
-                Join the waitlist for early access.
+                We&apos;re building a Fix Pack that turns GEOlens findings into copy-paste assets
+                and an agent-ready Markdown file. Join the waitlist for early access.
               </>
             )}
           </DialogDescription>

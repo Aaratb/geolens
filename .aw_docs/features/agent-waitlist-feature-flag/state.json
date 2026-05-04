@@ -2,8 +2,8 @@
   "feature_slug": "agent-waitlist-feature-flag",
   "feature_title": "Fixer Agent Behind Waitlist Feature Flag",
   "command": "feature-pro",
-  "current_phase": 7,
-  "status": "phase_6_complete",
+  "current_phase": 14,
+  "status": "phase_14_blocked",
   "repo": {
     "root": "/Users/aaratbhatnagar/Documents/Personal Workspace/AEO Agent",
     "branch": "main",
@@ -29,14 +29,14 @@
     "4": "done",
     "5": "done",
     "6": "done",
-    "7": "pending",
-    "8": "pending",
-    "9": "pending",
-    "10": "pending",
-    "11": "pending",
-    "12": "pending",
-    "13": "pending",
-    "14": "pending",
+    "7": "done",
+    "8": "done",
+    "9": "done",
+    "10": "skipped",
+    "11": "done",
+    "12": "skipped",
+    "13": "skipped",
+    "14": "blocked",
     "15": "pending"
   },
   "agent_runs": {
@@ -69,6 +69,55 @@
       "code-reviewer: slice 6 telemetry polish review",
       "security-reviewer: slice 6 telemetry endpoint review",
       "typescript-reviewer: slice 6 telemetry and React review"
+    ],
+    "7": [
+      "security-reviewer: full Fix Pack security review",
+      "legal-reviewer: full Fix Pack legal review",
+      "typescript-reviewer: full TypeScript/React review",
+      "database-reviewer: full persistence review",
+      "code-reviewer: full code-quality review",
+      "architect: full architecture review",
+      "platform-review:reliability-reviewer: full reliability review",
+      "platform-review:performance-reviewer: full performance review",
+      "code-reviewer: repair review",
+      "typescript-reviewer: repair review",
+      "security-reviewer: repair review",
+      "database-reviewer: repair review",
+      "code-reviewer: final cleanup review"
+    ],
+    "8": [
+      "local QA: full unit/type/lint/build gates",
+      "local QA: Playwright desktop/mobile smoke suite",
+      "local QA: Fix Pack API smoke coverage"
+    ],
+    "9": [
+      "local docs: README Fix Pack beta update",
+      "local docs: docs-i18n artifact",
+      "local i18n assessment: no current i18n runtime or catalog"
+    ],
+    "10": [
+      "skipped: no active failure signal after Phase 7 repair, Phase 8 QA, and Phase 9 docs"
+    ],
+    "11": [
+      "setup audit: npm test passed, 148 tests",
+      "setup audit: npm run typecheck passed",
+      "setup audit: npm run lint passed",
+      "setup audit: npm run build passed",
+      "setup audit: npm run e2e passed, 42 tests"
+    ],
+    "12": [
+      "skipped/satisfied: GHL platform router does not apply to standalone Next.js/Vercel product",
+      "prior specialist coverage from Phase 7 includes security, legal, TypeScript, database, architecture, reliability, performance, and code-quality review",
+      "Phase 11 hard gate passed after those reviews and repairs"
+    ],
+    "13": [
+      "not applicable: no pull request associated with current main branch",
+      "gh pr status reports no open PRs created by user and no PR for current branch",
+      "local changes are uncommitted and user has not requested commit, branch, push, or PR creation"
+    ],
+    "14": [
+      "blocked: Vercel preview/staging deploy not executed from dirty uncommitted main",
+      "safe staging path requires branch/commit/PR-backed preview or explicit local vercel deploy request"
     ]
   },
   "artifacts": {
@@ -82,6 +131,11 @@
     "design_review": ".aw_docs/features/agent-waitlist-feature-flag/designs/REVIEW.md",
     "api_impact_plan": ".aw_docs/features/agent-waitlist-feature-flag/phase-5-plan-api-impact.md",
     "execution": ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
+    "code_review": ".aw_docs/features/agent-waitlist-feature-flag/CODE_REVIEW.md",
+    "verification": ".aw_docs/features/agent-waitlist-feature-flag/verification.md",
+    "docs_i18n": ".aw_docs/features/agent-waitlist-feature-flag/docs-i18n.md",
+    "setup_audit": ".aw_docs/features/agent-waitlist-feature-flag/setup-audit.md",
+    "release": ".aw_docs/features/agent-waitlist-feature-flag/release.md",
     "note": "Follow-on track for the shipped GEOlens product; do not overwrite shipped geolens state."
   },
   "requirements_summary": {
@@ -173,5 +227,329 @@
     ],
     "save_point_commits": [],
     "notes": "No commit created because the user has not explicitly requested commits. Phase 6 build completed. Slice 6 reviewers approved after telemetry rate limiting, strict telemetry schema, sendBeacon fallback, prompt-copy, install-view, and interaction tracking fixes. Browser visual QA remains for the later QA phase."
+  },
+  "review_progress": {
+    "stage": "review",
+    "status": "approved_after_repair",
+    "mode": "parallel_with_repair",
+    "review_mode": "parallel",
+    "engines_run": [
+      "parallel-specialist-review"
+    ],
+    "engines_blocked": [
+      {
+        "engine": "aw-rules-review",
+        "reason": "Missing local generator script at /Users/aaratbhatnagar/.aw/.aw_registry/platform/core/skills/aw-rules-review/scripts/generate-review-template.mjs"
+      }
+    ],
+    "rules_review_worksheet": null,
+    "rules_review_failures": null,
+    "parallel_run_id": "phase-7-local-subagents-2026-05-04",
+    "reviewers_active": [
+      "security-reviewer",
+      "legal-reviewer",
+      "typescript-reviewer",
+      "database-reviewer",
+      "code-reviewer",
+      "architect",
+      "platform-review:reliability-reviewer",
+      "platform-review:performance-reviewer"
+    ],
+    "waves_executed": [
+      1,
+      2,
+      3
+    ],
+    "evidence_reviewed": [
+      "RED blocker suite failed before repair on stale generation, missing parser, missing limiter identity, and migration metadata",
+      "22-test focused blocker suite passing after repair",
+      "42-test expanded Fix Pack suite passing after repair",
+      "npm run typecheck passing",
+      "targeted ESLint passing with no errors",
+      "npm run build passing",
+      "specialist repair reviews approved with no blockers"
+    ],
+    "written_artifacts": [
+      ".aw_docs/features/agent-waitlist-feature-flag/CODE_REVIEW.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/execution.md"
+    ],
+    "blocking_findings": [],
+    "advisory_notes": [
+      "AW rules-manifest audit tool remains unavailable locally",
+      "Privacy/terms legal entity and transfer-language cleanup remains a broader public-launch item",
+      "Intermediate 0002/0003 Drizzle snapshots are absent; latest 0004 snapshot is present and db:generate has a current baseline"
+    ],
+    "cross_engine_findings": [
+      "Generation rate limiting was flagged by security, code, architecture, and performance reviewers and is resolved",
+      "Stuck generating recovery was flagged by database, code, architecture, and reliability reviewers and is resolved"
+    ],
+    "governance_status": "Phase 7 review completed, blockers repaired, and specialist re-review approved.",
+    "readiness_outcome": "Ready to advance to Phase 8 QA/browser verification.",
+    "blockers": [],
+    "recommended_next_commands": [
+      "Proceed to Phase 8 QA/browser verification"
+    ],
+    "resolved_blocking_findings": [
+      "DB-BLOCKER-1: Drizzle journal/snapshot metadata now covers 0002-0004 and latest schema baseline",
+      "REL-C-1/DB-H-1: stale generating rows are reclaimable after a 10-minute lease",
+      "S-HIGH-1/ARCH-H-1: dedicated Fix Pack generation rate limit added before generation",
+      "TS-H-1: client API responses are parsed through Zod before state updates",
+      "CODE-H-1/REL-C-2: route duration is aligned above the generator timeout"
+    ]
+  },
+  "phase_7_repair": {
+    "status": "complete",
+    "files_changed": [
+      ".gitignore",
+      ".aw_docs/features/agent-waitlist-feature-flag/CODE_REVIEW.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/state.json",
+      "app/api/v1/scans/[id]/fix-pack/route.ts",
+      "app/api/v1/scans/[id]/fix-pack/agent.md/route.ts",
+      "app/api/v1/waitlist/route.ts",
+      "app/scan/[id]/fix-pack/fix-pack-client.tsx",
+      "app/scan/[id]/waitlist-dialog.tsx",
+      "drizzle/0003_check_constraints.sql",
+      "drizzle/meta/_journal.json",
+      "drizzle/meta/0004_snapshot.json",
+      "lib/db/migrations.test.ts",
+      "lib/db/schema.ts",
+      "lib/fix-pack/client-response.ts",
+      "lib/fix-pack/client-response.test.ts",
+      "lib/fix-pack/markdown.ts",
+      "lib/fix-pack/service.ts",
+      "lib/fix-pack/service.test.ts",
+      "lib/fix-pack/store.ts",
+      "lib/rate-limit/index.ts",
+      "lib/rate-limit/index.test.ts",
+      "vercel.json"
+    ],
+    "validation_commands": [
+      "npm test -- lib/fix-pack/service.test.ts lib/fix-pack/client-response.test.ts lib/db/migrations.test.ts lib/rate-limit/index.test.ts",
+      "npm test -- lib/fix-pack/eligibility.test.ts lib/fix-pack/generate.test.ts lib/fix-pack/service.test.ts lib/fix-pack/ui-state.test.ts lib/fix-pack/client-response.test.ts lib/telemetry/fixpack-client.test.ts lib/rate-limit/index.test.ts lib/db/migrations.test.ts",
+      "npm run typecheck",
+      "npm run lint -- \"app/scan/[id]/fix-pack/fix-pack-client.tsx\" lib/rate-limit/index.ts lib/rate-limit/index.test.ts lib/db/schema.ts lib/db/migrations.test.ts",
+      "npm run build"
+    ],
+    "save_point_commits": [],
+    "notes": "No commit created because the user has not explicitly requested commits. Phase 7 blockers were repaired and re-reviewed; ready for Phase 8 QA."
+  },
+  "verification_progress": {
+    "stage": "test",
+    "status": "phase_8_complete",
+    "mode": "local_qa",
+    "scope": [
+      "full unit regression suite",
+      "TypeScript, ESLint, and production build gates",
+      "local browser smoke tests on desktop and mobile Chromium",
+      "read-only Fix Pack API validation paths"
+    ],
+    "commands_run": [
+      "npm test",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run build",
+      "npx playwright install chromium",
+      "npm run lint -- playwright.config.ts e2e/api.spec.ts e2e/policies.spec.ts",
+      "npm run typecheck",
+      "npm run e2e"
+    ],
+    "evidence": [
+      "23 Vitest files passed, 148 tests total",
+      "TypeScript typecheck passed",
+      "Full ESLint passed",
+      "Next production build passed and listed Fix Pack routes",
+      "Playwright desktop/mobile suite passed, 42 tests total",
+      "New Fix Pack smoke coverage validates invalid scan IDs and unknown telemetry rejection"
+    ],
+    "failures": [],
+    "unavailable": [
+      "Authenticated completed-scan Fix Pack happy-path browser journey requires seeded Clerk user, allowlisted beta identity, completed owned scan, database findings/probes, and generation credentials or a server-side mock"
+    ],
+    "fixes_applied": [
+      "Added read-only Fix Pack API smoke tests",
+      "Changed Playwright mobile project from an iPhone/WebKit preset to Pixel 5 Chromium",
+      "Made sitemap smoke assertion use the active baseURL origin"
+    ],
+    "written_artifacts": [
+      ".aw_docs/features/agent-waitlist-feature-flag/verification.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/state.json"
+    ],
+    "recommended_next_commands": [
+      "Proceed to Phase 9 with seeded authenticated Fix Pack browser QA as a pre-beta follow-up"
+    ]
+  },
+  "docs_i18n_progress": {
+    "stage": "docs_i18n",
+    "status": "phase_9_complete",
+    "mode": "docs",
+    "scope": [
+      "durable developer/operator documentation for the gated Fix Pack beta",
+      "internationalization assessment against the current repository"
+    ],
+    "files_changed": [
+      "README.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/docs-i18n.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/state.json"
+    ],
+    "documentation_updates": [
+      "README now documents Fix Pack beta behavior, gates, API routes, and feature artifacts",
+      "README project layout includes lib/fix-pack",
+      "README roadmap separates shipped gated Fix Pack beta from future autonomous research/workflow automation",
+      "docs-i18n.md records Phase 9 documentation coverage and i18n follow-ups"
+    ],
+    "i18n_assessment": [
+      "No next-intl, react-intl, or i18next dependency found",
+      "No messages or locales directory found",
+      "Existing app copy is English-only, so Fix Pack follows current repo convention"
+    ],
+    "validation_commands": [
+      "npx prettier --check README.md \".aw_docs/features/agent-waitlist-feature-flag/docs-i18n.md\"",
+      "npx prettier --write README.md \".aw_docs/features/agent-waitlist-feature-flag/docs-i18n.md\"",
+      "npx prettier --check README.md \".aw_docs/features/agent-waitlist-feature-flag/docs-i18n.md\""
+    ],
+    "known_gaps": [
+      "Full repo format check reports pre-existing formatting differences because npm run format:check always includes the whole repository glob",
+      "Future i18n adoption should move Fix Pack strings into the same catalog as the broader app"
+    ],
+    "recommended_next_commands": [
+      "Proceed to Phase 10 Debug / Fixes; skip candidate because Phase 7 and Phase 8 have no open blockers"
+    ]
+  },
+  "debug_fixes_progress": {
+    "stage": "debug_fixes",
+    "status": "phase_10_skipped",
+    "mode": "skip_with_rationale",
+    "rationale": [
+      "Phase 7 blockers were repaired and re-reviewed with no remaining blocking findings",
+      "Phase 8 local QA passed unit, typecheck, lint, build, and Playwright smoke gates",
+      "Phase 9 changed documentation and workflow artifacts only",
+      "No active reproduction, failing check, alert, or regression report exists for a debug pass"
+    ],
+    "not_a_blocker": [
+      "Authenticated completed-scan Fix Pack happy-path browser QA remains a pre-beta seeded test follow-up, not a reproduced local defect"
+    ],
+    "written_artifacts": [
+      ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/state.json"
+    ],
+    "recommended_next_commands": [
+      "Proceed to Phase 11 Setup Audit / hard gate"
+    ]
+  },
+  "setup_audit_progress": {
+    "stage": "setup_audit",
+    "status": "phase_11_complete",
+    "mode": "hard_gate",
+    "scope": [
+      "full unit regression suite",
+      "TypeScript typecheck",
+      "full ESLint",
+      "production Next.js build",
+      "local Playwright desktop/mobile smoke suite"
+    ],
+    "commands_run": [
+      "npm test",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run build",
+      "npm run e2e"
+    ],
+    "evidence": [
+      "23 Vitest files passed, 148 tests total",
+      "TypeScript typecheck passed",
+      "Full ESLint passed",
+      "Next production build passed and listed Fix Pack routes",
+      "Playwright desktop/mobile suite passed, 42 tests total"
+    ],
+    "failures": [],
+    "unavailable": [
+      "Authenticated completed-scan Fix Pack happy-path browser journey remains a seeded pre-beta QA follow-up"
+    ],
+    "written_artifacts": [
+      ".aw_docs/features/agent-waitlist-feature-flag/setup-audit.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/state.json"
+    ],
+    "recommended_next_commands": [
+      "Proceed to Phase 12"
+    ]
+  },
+  "platform_specialists_progress": {
+    "stage": "platform_specialists",
+    "status": "phase_12_skipped",
+    "mode": "skip_with_prior_coverage",
+    "rationale": [
+      "The platform specialist router is GHL-specific and should not be applied to this standalone Next.js/Vercel product",
+      "Phase 7 already covered the applicable specialist axes: security, legal, TypeScript/React, database, architecture, reliability, performance, and code quality",
+      "Phase 7 blockers were repaired and re-reviewed with no remaining blocking findings",
+      "Phase 11 hard gate passed after those repairs and later docs/test changes"
+    ],
+    "evidence_reviewed": [
+      ".aw_docs/features/agent-waitlist-feature-flag/CODE_REVIEW.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/setup-audit.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/execution.md"
+    ],
+    "blocking_findings": [],
+    "advisory_notes": [
+      "Seeded authenticated completed-scan Fix Pack browser journey remains a pre-beta QA follow-up"
+    ],
+    "written_artifacts": [
+      ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/state.json"
+    ],
+    "recommended_next_commands": [
+      "Proceed to Phase 13"
+    ]
+  },
+  "pr_auto_fix_progress": {
+    "stage": "pr_auto_fix",
+    "status": "phase_13_not_applicable",
+    "mode": "no_pr",
+    "evidence": [
+      "git status --short --branch shows current branch main...origin/main with local uncommitted changes",
+      "gh pr status reports no pull request associated with main",
+      "gh pr status reports no open pull requests created by the user",
+      "User has not requested commit, branch creation, push, or PR creation"
+    ],
+    "actions_taken": [
+      "No merge conflict resolution attempted because there is no PR branch",
+      "No CI or PR-check repair attempted because there are no PR-attached checks"
+    ],
+    "written_artifacts": [
+      ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/state.json"
+    ],
+    "recommended_next_commands": [
+      "Proceed to Phase 14"
+    ]
+  },
+  "staging_progress": {
+    "stage": "staging_link",
+    "status": "phase_14_blocked",
+    "mode": "staging_preview",
+    "provider": "Vercel",
+    "resolved_mechanism": "Vercel Preview Deployment from branch/PR push or explicit local vercel deploy",
+    "build_links": [],
+    "execution_evidence": [
+      "Phase 11 setup audit passed unit, typecheck, lint, build, and Playwright smoke gates",
+      "git status --short --branch shows main...origin/main with uncommitted local changes",
+      "gh pr status reports no pull request associated with the current branch"
+    ],
+    "blockers": [
+      "No stable branch, commit, or PR checkpoint exists for a Git-backed Vercel preview",
+      "User has not explicitly requested deploying the dirty local working tree"
+    ],
+    "rollback_path": "No staging deployment was created, so no rollback is required.",
+    "written_artifacts": [
+      ".aw_docs/features/agent-waitlist-feature-flag/release.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
+      ".aw_docs/features/agent-waitlist-feature-flag/state.json"
+    ],
+    "recommended_next_commands": [
+      "Create a branch/commit/PR for a Git-backed Vercel preview, or explicitly request a local vercel deploy preview from the current tree"
+    ]
   }
 }

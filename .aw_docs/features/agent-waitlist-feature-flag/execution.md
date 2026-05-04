@@ -431,3 +431,256 @@ All planned build slices are complete:
 - Slice 4: API Completion And Markdown Download
 - Slice 5: Fix Pack Page And Scan CTA
 - Slice 6: Telemetry And Polish
+
+## Phase 7: Review And Repair
+Status: complete.
+
+### Initial Review Result
+Phase 7 initially returned `CHANGES_REQUESTED` in `CODE_REVIEW.md`. Blocking findings covered:
+- Drizzle migration journal/snapshot integrity for raw SQL migrations;
+- stale `generating` Fix Pack rows with no recovery path;
+- missing dedicated rate limit for the LLM-backed generation endpoint;
+- client-side JSON response casts without runtime validation;
+- route duration mismatch risk against the generator timeout.
+
+The AW rules-manifest generator was unavailable locally, so that engine was recorded as blocked. Parallel specialist review ran with security, legal, TypeScript, database, code-quality, architecture, reliability, and performance reviewers.
+
+### RED Proof
+Command:
+
+```sh
+npm test -- lib/fix-pack/service.test.ts lib/fix-pack/client-response.test.ts lib/db/migrations.test.ts lib/rate-limit/index.test.ts
+```
+
+Result: failed before repair on stale-generation recovery, missing client response parser, missing generation limiter identity helper, and missing Drizzle journal/snapshot metadata.
+
+### Repair Scope
+- Added stale generation lease recovery in `lib/fix-pack/store.ts` and `lib/fix-pack/service.ts`.
+- Added Fix Pack generation rate limiting in `lib/rate-limit/index.ts` and `app/api/v1/scans/[id]/fix-pack/route.ts`.
+- Added Zod client response contracts in `lib/fix-pack/client-response.ts` and wired them into the Fix Pack client.
+- Added UUID guards to Fix Pack status and Markdown download routes.
+- Added route duration config in code and `vercel.json`.
+- Registered raw SQL migrations in `drizzle/meta/_journal.json` and added `drizzle/meta/0004_snapshot.json`.
+- Aligned the `share_tokens_expires_at_idx` partial index across migration, schema, and snapshot.
+- Narrowed waitlist copy, gated waitlist telemetry on actual inserts, and added AI-output disclosure in UI and Markdown.
+
+### GREEN Proof
+Commands:
+
+```sh
+npm test -- lib/fix-pack/service.test.ts lib/fix-pack/client-response.test.ts lib/rate-limit/index.test.ts lib/db/migrations.test.ts
+npm test -- lib/fix-pack/eligibility.test.ts lib/fix-pack/generate.test.ts lib/fix-pack/service.test.ts lib/fix-pack/ui-state.test.ts lib/fix-pack/client-response.test.ts lib/telemetry/fixpack-client.test.ts lib/rate-limit/index.test.ts lib/db/migrations.test.ts
+npm run typecheck
+npm run lint -- "app/scan/[id]/fix-pack/fix-pack-client.tsx" lib/rate-limit/index.ts lib/rate-limit/index.test.ts lib/db/schema.ts lib/db/migrations.test.ts
+npm run build
+```
+
+Results:
+- Focused blocker suite passed, 22 tests.
+- Expanded focused Fix Pack suite passed, 42 tests.
+- Typecheck passed.
+- Targeted ESLint passed with no errors.
+- Production build passed.
+
+### Repair Reviews
+- `code-reviewer`: approved final repair; no blockers.
+- `typescript-reviewer`: approved; TS-H-1 resolved.
+- `security-reviewer`: approved; S-HIGH-1 resolved.
+- `database-reviewer`: approved; DB-BLOCKER-1 and schema drift resolved.
+
+### Phase 7 Status
+Phase 7 is approved after repair. The feature is ready to proceed to Phase 8 QA/browser verification.
+
+## Phase 8: QA And Browser Verification
+Status: complete for the available local QA scope.
+
+### QA Scope
+Phase 8 covered full local regression gates, production build verification, local browser smoke coverage, and new read-only Fix Pack API smoke checks that do not require seeded scan data.
+
+The authenticated completed-scan Fix Pack happy path remains unavailable locally without a seeded Clerk user, allowlisted beta identity, completed owned scan, database findings/probes, and generation credentials or a server-side mock.
+
+### Validation Evidence
+Commands:
+
+```sh
+npm test
+npm run typecheck
+npm run lint
+npm run build
+npx playwright install chromium
+npm run lint -- playwright.config.ts e2e/api.spec.ts e2e/policies.spec.ts
+npm run typecheck
+npm run e2e
+```
+
+Results:
+- Unit suite passed: 23 test files, 148 tests.
+- Typecheck passed.
+- Full ESLint passed.
+- Production build passed and listed Fix Pack routes.
+- Playwright Chromium installed locally.
+- Local Playwright suite passed: 42 tests across `chromium-desktop` and `chromium-mobile`.
+
+### E2E Fixes Applied
+- Added Fix Pack route smoke coverage for invalid scan IDs across status, generation, and Markdown download routes.
+- Added Fix Pack telemetry smoke coverage for rejecting unknown events.
+- Changed Playwright mobile project from an iPhone/WebKit preset to `Pixel 5` so the `chromium-mobile` project runs Chromium as named.
+- Updated sitemap smoke assertion to check the active `baseURL` origin so local `http://localhost:3000` and production `https://geolens.xyz` both work.
+
+### Verification Artifact
+Fresh QA evidence was written to `.aw_docs/features/agent-waitlist-feature-flag/verification.md`.
+
+### Phase 8 Status
+Phase 8 is approved for available local QA. Proceed to Phase 9 with the seeded authenticated Fix Pack happy-path browser journey recorded as a pre-beta QA follow-up.
+
+## Phase 9: Docs And i18n
+Status: complete.
+
+### Scope
+Phase 9 covered durable documentation for the gated Fix Pack beta and an i18n assessment against the current repo.
+
+### Documentation Updates
+- Added a `Fix Pack beta` section to `README.md` covering the product boundary, feature gates, API routes, and source-of-truth artifacts.
+- Updated the README project layout to include `lib/fix-pack/`.
+- Updated the README roadmap to distinguish the shipped gated Fix Pack beta from future autonomous research/workflow automation.
+- Added `.aw_docs/features/agent-waitlist-feature-flag/docs-i18n.md` as the Phase 9 artifact.
+
+### i18n Assessment
+The repo has no active i18n runtime or message catalog:
+- no `next-intl`, `react-intl`, or `i18next` dependency;
+- no `messages/`, `locales/`, or app-level locale routing tree;
+- existing app copy is English-only.
+
+Phase 9 did not introduce translation infrastructure because that would be a cross-cutting product/platform change beyond this gated beta slice. Fix Pack user-facing strings are inventoried in `docs-i18n.md` for a future i18n migration.
+
+### Validation
+Commands:
+
+```sh
+npx prettier --check README.md ".aw_docs/features/agent-waitlist-feature-flag/docs-i18n.md"
+npx prettier --write README.md ".aw_docs/features/agent-waitlist-feature-flag/docs-i18n.md"
+npx prettier --check README.md ".aw_docs/features/agent-waitlist-feature-flag/docs-i18n.md"
+```
+
+Result: targeted docs formatting passed.
+
+The repo-level `npm run format:check -- ...` command was attempted first, but the npm script always includes the full repository glob and reported many pre-existing formatting differences outside this Phase 9 scope.
+
+### Phase 9 Status
+Phase 9 is complete. Proceed to Phase 10 Debug / Fixes; based on Phase 7 and 8, there are no open blockers, so Phase 10 is a skip candidate unless the user wants additional repairs.
+
+## Phase 10: Debug / Fixes
+Status: skipped.
+
+### Rationale
+No active failure signal exists for a debug/fix pass:
+- Phase 7 blockers were repaired and re-reviewed by specialist reviewers.
+- Phase 8 unit, typecheck, lint, build, and local Playwright smoke gates passed.
+- Phase 9 only changed documentation and workflow artifacts.
+
+The authenticated completed-scan Fix Pack happy path remains a pre-beta QA follow-up because it needs seeded Clerk/database/generation conditions. It is not a reproduced defect in the current local QA scope.
+
+### Phase 10 Status
+Phase 10 is skipped with rationale. Proceed to Phase 11 Setup Audit / hard gate.
+
+## Phase 11: Setup Audit / Hard Gate
+Status: complete.
+
+### Scope
+Phase 11 reran the release-critical setup gates after Phase 9 documentation updates and Phase 10 skip-state changes.
+
+### Validation Evidence
+Commands:
+
+```sh
+npm test
+npm run typecheck
+npm run lint
+npm run build
+npm run e2e
+```
+
+Results:
+- Unit suite passed: 23 test files, 148 tests.
+- Typecheck passed.
+- Full ESLint passed.
+- Production build passed and listed the Fix Pack API/page routes.
+- Local Playwright suite passed: 42 tests across `chromium-desktop` and `chromium-mobile`.
+
+### Notes
+Playwright reused the local app already serving at `http://localhost:3000`; no duplicate dev server was started.
+
+The authenticated completed-scan Fix Pack happy-path browser journey remains a seeded pre-beta QA follow-up and is not a Phase 11 blocker.
+
+### Setup Audit Artifact
+Fresh hard-gate evidence was written to `.aw_docs/features/agent-waitlist-feature-flag/setup-audit.md`.
+
+### Phase 11 Status
+Phase 11 is approved. Proceed to Phase 12.
+
+## Phase 12: Platform Specialists
+Status: skipped / satisfied by prior specialist coverage.
+
+### Rationale
+This workflow phase is intended for platform-specific specialist gates. The available platform router is GHL-oriented and should not be applied to generic non-GHL work. GEOlens is a standalone Next.js/Vercel product, not a GHL backend, MFA, worker, data-platform, or infra surface.
+
+The applicable specialist coverage already ran in Phase 7 and was re-checked after repair:
+- security review;
+- legal review;
+- TypeScript/React review;
+- database review;
+- architecture review;
+- reliability review;
+- performance review;
+- final code-quality cleanup review.
+
+Phase 11 then reran the hard gate with full tests, lint, typecheck, build, and browser smoke coverage.
+
+### Open Specialist Follow-Up
+The only remaining specialist-style follow-up is pre-beta QA for the authenticated completed-scan Fix Pack happy path, which requires seeded Clerk/database/generation conditions. This remains tracked as a QA follow-up, not a Phase 12 blocker.
+
+### Phase 12 Status
+Phase 12 is skipped with rationale. Proceed to Phase 13.
+
+## Phase 13: PR Auto-Fix
+Status: not applicable.
+
+### Rationale
+Phase 13 only applies when there is an active pull request to inspect for merge conflicts, CI failures, review comments, or PR-attached checks.
+
+Current evidence:
+- `git status --short --branch` shows the workspace on `main...origin/main` with local uncommitted changes.
+- `gh pr status` reports no pull request associated with `main`.
+- The user has not requested a commit, branch, push, or PR creation.
+
+Because there is no PR, there are no PR checks or conflicts to auto-fix in this phase.
+
+### Phase 13 Status
+Phase 13 is not applicable. Proceed to Phase 14.
+
+## Phase 14: Staging Link
+Status: blocked / not executed.
+
+### Selected Mode
+Staging / preview deployment.
+
+### Provider And Mechanism
+Provider: Vercel.
+
+For this standalone Next.js/Vercel app, the staging-equivalent mechanism is a Vercel Preview Deployment, usually created from a branch/PR push or by running `vercel deploy` from the project root.
+
+### Blocker
+The workspace is on `main...origin/main` with uncommitted local changes and no associated PR or feature branch.
+
+Creating a preview deployment from this state would publish uncommitted local changes to an external URL without a stable branch, commit, or PR checkpoint. The user has not explicitly requested a deploy, branch, commit, push, or PR creation.
+
+### Evidence
+- Phase 11 setup audit passed: unit, typecheck, lint, production build, and Playwright smoke.
+- `git status --short --branch` shows dirty local work on `main`.
+- `gh pr status` reports no pull request associated with the current branch.
+
+### Release Artifact
+Staging status and safe next actions were written to `.aw_docs/features/agent-waitlist-feature-flag/release.md`.
+
+### Phase 14 Status
+Phase 14 is blocked pending an explicit staging/deploy path. Safe options are: create a branch/commit/PR for a Git-backed Vercel preview, or explicitly request a local `vercel deploy` preview from the current dirty tree.

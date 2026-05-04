@@ -5,6 +5,7 @@
  *   rl:scan:ip:<hash>     2 / 24h    anonymous scans
  *   rl:scan:user:<id>     10 / 24h   authenticated scans
  *   rl:waitlist:ip:<hash> 5 / 1h     waitlist signups
+ *   rl:fixpack:gen:<id>   5 / 1h     Fix Pack generations
  *   rl:fixpack:events:<hash> 30 / 10m client telemetry writes
  */
 import { Redis } from "@upstash/redis";
@@ -24,12 +25,26 @@ if (!RAW_SALT && process.env.NODE_ENV === "production") {
 }
 const SALT = RAW_SALT ?? "local-dev-only-not-for-production";
 
+function requireRedisEnv(): { url: string; token: string } {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if ((!url || !token) && process.env.NODE_ENV === "production") {
+    throw new Error("UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be set in production");
+  }
+
+  return {
+    url: url ?? "http://localhost:8079",
+    token: token ?? "local-dev-token",
+  };
+}
+
 let _redis: Redis | null = null;
 function redis(): Redis {
   if (!_redis) {
+    const credentials = requireRedisEnv();
     _redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL!,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+      url: credentials.url,
+      token: credentials.token,
     });
   }
   return _redis;
@@ -38,6 +53,7 @@ function redis(): Redis {
 let _anon: Ratelimit | null = null;
 let _user: Ratelimit | null = null;
 let _waitlist: Ratelimit | null = null;
+let _fixPackGeneration: Ratelimit | null = null;
 let _fixPackEvents: Ratelimit | null = null;
 
 function anonScanLimiter(): Ratelimit {
@@ -86,6 +102,18 @@ function fixPackEventsLimiter(): Ratelimit {
     });
   }
   return _fixPackEvents;
+}
+
+function fixPackGenerationLimiter(): Ratelimit {
+  if (!_fixPackGeneration) {
+    _fixPackGeneration = new Ratelimit({
+      redis: redis(),
+      limiter: Ratelimit.slidingWindow(5, "1 h"),
+      prefix: "rl:fixpack:gen",
+      analytics: false,
+    });
+  }
+  return _fixPackGeneration;
 }
 
 export function hashIp(ip: string): string {
@@ -151,4 +179,26 @@ export async function limitFixPackEvents(ipHash: string): Promise<LimitResult> {
   }
 }
 
-export const __testing = { hashIp };
+export function getFixPackGenerationLimitKey(input: {
+  userId?: string | null;
+  ipHash: string;
+}): string {
+  return input.userId ? `user:${input.userId}` : `ip:${input.ipHash}`;
+}
+
+export async function limitFixPackGeneration(input: {
+  userId?: string | null;
+  ipHash: string;
+}): Promise<LimitResult> {
+  try {
+    const r = await fixPackGenerationLimiter().limit(getFixPackGenerationLimitKey(input));
+    return { ok: r.success, remaining: r.remaining, reset: r.reset, limit: r.limit };
+  } catch (err) {
+    // Fail open for the gated beta, but keep this limiter dedicated so we can
+    // tighten policy independently before a wider rollout.
+    console.error("[rate-limit] Fix Pack generation limiter failed open", err);
+    return { ok: true, remaining: 999, reset: Date.now() + 3_600_000, limit: 999 };
+  }
+}
+
+export const __testing = { getFixPackGenerationLimitKey, hashIp };

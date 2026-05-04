@@ -12,6 +12,7 @@
   ],
   "functions": {
     "app/api/v1/scans/route.ts": { "maxDuration": 300 },
-    "app/api/v1/scans/[id]/stream/route.ts": { "maxDuration": 300 }
+    "app/api/v1/scans/[id]/stream/route.ts": { "maxDuration": 300 },
+    "app/api/v1/scans/[id]/fix-pack/route.ts": { "maxDuration": 60 }
   }
 }

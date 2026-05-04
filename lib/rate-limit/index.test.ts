@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { extractIp, __testing } from "./index";
 
-const { hashIp } = __testing;
+const { getFixPackGenerationLimitKey, hashIp } = __testing;
 
 describe("hashIp", () => {
   it("produces a stable 32-char hex hash", () => {
@@ -40,5 +40,17 @@ describe("extractIp", () => {
 
   it("returns 0.0.0.0 with no headers", () => {
     expect(extractIp(new Headers())).toBe("0.0.0.0");
+  });
+});
+
+describe("getFixPackGenerationLimitKey", () => {
+  it("rate limits authenticated Fix Pack generation by user first", () => {
+    expect(getFixPackGenerationLimitKey({ userId: "user_123", ipHash: "ip_hash" })).toBe(
+      "user:user_123",
+    );
+  });
+
+  it("falls back to IP hash only when there is no user id", () => {
+    expect(getFixPackGenerationLimitKey({ userId: null, ipHash: "ip_hash" })).toBe("ip:ip_hash");
   });
 });

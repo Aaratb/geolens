@@ -35,7 +35,7 @@ export default defineConfig({
     },
     {
       name: "chromium-mobile",
-      use: { ...devices["iPhone 14"] },
+      use: { ...devices["Pixel 5"] },
     },
   ],
   // Don't auto-start a webserver; tests assume one is running OR they target

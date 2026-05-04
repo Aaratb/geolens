@@ -6,14 +6,16 @@ import { getFixPackEligibility } from "@/lib/fix-pack/eligibility";
 import { generateOrGetFixPack, InvalidPersistedFixPackError, safeGenerationError } from "@/lib/fix-pack/service";
 import { parseFixPackPayload, type FixPackPayload } from "@/lib/fix-pack/schema";
 import { getFixPackByScanId } from "@/lib/fix-pack/store";
-import { extractIp, hashIp } from "@/lib/rate-limit";
+import { extractIp, hashIp, limitFixPackGeneration } from "@/lib/rate-limit";
 import { getScanHeader, getScanWithDetails } from "@/lib/scan/queries";
 import { track } from "@/lib/telemetry/track";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const Body = z.object({}).strict();
+const ScanId = z.string().uuid();
 
 function assertCompletedScan(scan: FixPackScanHeader): NextResponse | null {
   if (scan.status !== "completed") {
@@ -31,6 +33,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  if (!ScanId.safeParse(id).success) {
+    return NextResponse.json({ error: "invalid_scan_id" }, { status: 400 });
+  }
+
   const user = await getCurrentUser();
   const ipHash = hashIp(extractIp(req.headers));
   const scan = await getScanHeader(id);
@@ -98,6 +104,10 @@ export async function POST(
   }
 
   const { id } = await params;
+  if (!ScanId.safeParse(id).success) {
+    return NextResponse.json({ error: "invalid_scan_id" }, { status: 400 });
+  }
+
   const user = await getCurrentUser();
   const ipHash = hashIp(extractIp(req.headers));
   const scan = await getScanHeader(id);
@@ -116,6 +126,15 @@ export async function POST(
   const eligibility = getFixPackEligibility(user);
   if (!eligibility.eligible) {
     return NextResponse.json(eligibility, { status: 403 });
+  }
+
+  const limit = await limitFixPackGeneration({ userId: user?.id ?? null, ipHash });
+  if (!limit.ok) {
+    const retryAfter = Math.max(1, Math.ceil((limit.reset - Date.now()) / 1000));
+    return NextResponse.json(
+      { error: "rate_limited", message: "Too many Fix Pack generations. Try again later." },
+      { status: 429, headers: { "retry-after": String(retryAfter) } },
+    );
   }
 
   const details = await getScanWithDetails(scan.id);

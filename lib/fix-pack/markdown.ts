@@ -40,6 +40,8 @@ export function renderFixPackAgentMarkdown(payload: FixPackPayload): string {
   return [
     "# GEOlens Fix Pack Agent",
     "",
+    "> AI-generated from your GEOlens scan. Review and test every recommendation before applying changes.",
+    "",
     escapeMarkdownFence(payload.agentMarkdown),
     "",
     "## Operating Prompt",

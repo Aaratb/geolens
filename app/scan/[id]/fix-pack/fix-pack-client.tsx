@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import type { FixPackPayload } from "@/lib/fix-pack/schema";
+import {
+  parseFixPackGenerateResponse,
+  parseFixPackStatusResponse,
+} from "@/lib/fix-pack/client-response";
 import {
   getFixPackActionState,
   getFixPackDownloadHref,
@@ -12,17 +15,10 @@ import { trackFixPackClientEvent } from "@/lib/telemetry/client";
 import { Button } from "@/components/ui/button";
 import { WaitlistDialog } from "../waitlist-dialog";
 
-type FixPackResponse =
-  | {
-      eligible: true;
-      status: FixPackUiStatus;
-      fixPack: (FixPackPayload & { id: string; version: string }) | null;
-    }
-  | { eligible: false; reason: string };
-
-type GenerateResponse =
-  | { ok: true; status: "completed" | "generating"; fixPackId: string }
-  | { error: string; reason?: string };
+const FETCH_TIMEOUT_MS = 15_000;
+// 35 x 1200ms ~= 42s, leaving room under the 60s route maxDuration.
+const POLL_ATTEMPTS = 35;
+const POLL_INTERVAL_MS = 1200;
 
 interface Props {
   scanId: string;
@@ -47,16 +43,17 @@ export function FixPackClient({
   const [copied, setCopied] = useState(false);
   const [waitlistOpen, setWaitlistOpen] = useState(false);
   const trackedInstallViewRef = useRef(false);
+  const generateControllerRef = useRef<AbortController | null>(null);
 
   const action = getFixPackActionState({ eligible, status });
   const downloadHref = getFixPackDownloadHref(scanId);
 
-  async function refreshPack(): Promise<FixPackUiStatus> {
-    const res = await fetch(`/api/v1/scans/${scanId}/fix-pack`);
-    const data = (await res.json()) as FixPackResponse | { error: string };
-    if (!res.ok || "error" in data) {
+  async function refreshPack(signal?: AbortSignal): Promise<FixPackUiStatus> {
+    const { data: raw, res } = await fetchJson(`/api/v1/scans/${scanId}/fix-pack`, { signal });
+    if (!res.ok) {
       throw new Error("Could not refresh Fix Pack.");
     }
+    const data = parseStatusResponse(raw);
     if (!data.eligible) {
       setStatus("not_generated");
       setPayload(null);
@@ -69,10 +66,12 @@ export function FixPackClient({
     return data.status;
   }
 
-  async function pollUntilReady() {
-    for (let attempt = 0; attempt < 10; attempt += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      const next = await refreshPack();
+  async function pollUntilReady(signal?: AbortSignal) {
+    for (let attempt = 0; attempt < POLL_ATTEMPTS; attempt += 1) {
+      if (signal?.aborted) return;
+      await sleep(POLL_INTERVAL_MS, signal);
+      if (signal?.aborted) return;
+      const next = await refreshPack(signal);
       if (next !== "generating") return;
     }
     throw new Error("Generation is taking longer than expected. Please try again.");
@@ -80,22 +79,22 @@ export function FixPackClient({
 
   useEffect(() => {
     if (initialStatus !== "generating") return;
-    let cancelled = false;
+    const controller = new AbortController();
 
     async function pollExistingGeneration() {
       try {
-        await pollUntilReady();
+        await pollUntilReady(controller.signal);
       } catch (err) {
-        if (cancelled) return;
+        if (controller.signal.aborted) return;
         setStatus(payload ? "completed" : "failed");
-        setError(err instanceof Error ? err.message : "Could not refresh Fix Pack.");
+        setError(readableError(err, "Could not refresh Fix Pack."));
       }
     }
 
     void pollExistingGeneration();
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, [initialStatus]);
 
@@ -113,6 +112,12 @@ export function FixPackClient({
     });
   }, [fixPackId, payload, scanId, status]);
 
+  useEffect(() => {
+    return () => {
+      generateControllerRef.current?.abort();
+    };
+  }, []);
+
   async function generatePack() {
     if (busy || status === "generating") return;
     trackFixPackClientEvent({
@@ -126,26 +131,38 @@ export function FixPackClient({
     setBusy(true);
     setError(null);
     setStatus("generating");
+    generateControllerRef.current?.abort();
+    const controller = new AbortController();
+    generateControllerRef.current = controller;
     try {
       const res = await fetch(`/api/v1/scans/${scanId}/fix-pack`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({}),
+        signal: AbortSignal.any([controller.signal, AbortSignal.timeout(FETCH_TIMEOUT_MS)]),
       });
-      const data = (await res.json()) as GenerateResponse;
+      const data = parseGenerateResponse(await res.json());
       if (!res.ok || "error" in data) {
-        throw new Error("Fix Pack generation failed.");
+        throw new Error(
+          "message" in data ? (data.message ?? "Fix Pack generation failed.") : "Fix Pack generation failed.",
+        );
       }
       if (data.status === "generating") {
-        await pollUntilReady();
+        await pollUntilReady(controller.signal);
       } else {
-        await refreshPack();
+        await refreshPack(controller.signal);
       }
     } catch (err) {
+      if (controller.signal.aborted) return;
       setStatus(payload ? "completed" : "failed");
-      setError(err instanceof Error ? err.message : "Could not generate Fix Pack.");
+      setError(readableError(err, "Could not generate Fix Pack."));
     } finally {
-      setBusy(false);
+      if (generateControllerRef.current === controller) {
+        generateControllerRef.current = null;
+      }
+      if (!controller.signal.aborted) {
+        setBusy(false);
+      }
     }
   }
 
@@ -240,9 +257,13 @@ export function FixPackClient({
             Generate the three highest-leverage fixes, then use the Markdown file in Claude Code,
             Cursor, or `AGENTS.md`.
           </p>
+          <p className="text-[12px] marginalia leading-[1.6] mt-3">
+            Fix cards and the agent file are AI-generated from your scan data. Review before
+            applying.
+          </p>
           {status === "completed" && eligible ? (
             <Button asChild variant="accent" className="w-full mt-5">
-              <Link
+              <a
                 href={downloadHref}
                 onClick={() =>
                   trackFixPackClientEvent({
@@ -256,7 +277,7 @@ export function FixPackClient({
                 }
               >
                 {action.label}
-              </Link>
+              </a>
             </Button>
           ) : (
             <Button
@@ -271,7 +292,7 @@ export function FixPackClient({
           )}
           {payload ? (
             <>
-              <Link
+              <a
                 href={downloadHref}
                 onClick={() =>
                   trackFixPackClientEvent({
@@ -287,7 +308,7 @@ export function FixPackClient({
                 style={{ color: "var(--color-accent-soft)" }}
               >
                 Direct download link
-              </Link>
+              </a>
               <InstallPanel payload={payload} />
             </>
           ) : null}
@@ -319,6 +340,55 @@ export function FixPackClient({
       />
     </>
   );
+}
+
+async function fetchJson(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<{ res: Response; data: unknown }> {
+  const timeoutSignal = AbortSignal.timeout(FETCH_TIMEOUT_MS);
+  const signal = init?.signal ? AbortSignal.any([init.signal, timeoutSignal]) : timeoutSignal;
+  const res = await fetch(input, { ...init, signal });
+  return { res, data: await res.json() };
+}
+
+function parseStatusResponse(input: unknown) {
+  try {
+    return parseFixPackStatusResponse(input);
+  } catch {
+    throw new Error("Unexpected response from server. Please refresh and try again.");
+  }
+}
+
+function parseGenerateResponse(input: unknown) {
+  try {
+    return parseFixPackGenerateResponse(input);
+  } catch {
+    throw new Error("Unexpected response from server. Please refresh and try again.");
+  }
+}
+
+function readableError(err: unknown, fallback: string): string {
+  return err instanceof Error ? err.message : fallback;
+}
+
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    if (signal?.aborted) {
+      resolve();
+      return;
+    }
+
+    const timeout = setTimeout(resolve, ms);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timeout);
+        resolve();
+      },
+      { once: true },
+    );
+  });
 }
 
 function PromptPanel({

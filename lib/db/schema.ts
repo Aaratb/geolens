@@ -88,6 +88,9 @@ export const scans = pgTable(
     index("scans_user_created_idx").on(t.userId, t.createdAt),
     index("scans_url_hash_idx").on(t.urlHash),
     index("scans_ip_created_idx").on(t.ipHash, t.createdAt),
+    index("scans_active_status_idx")
+      .on(t.status, t.createdAt)
+      .where(sql`${t.status} IN ('queued', 'running')`),
   ],
 );
 
@@ -200,7 +203,9 @@ export const shareTokens = pgTable(
   },
   (t) => [
     index("share_tokens_scan_id_idx").on(t.scanId),
-    index("share_tokens_expires_at_idx").on(t.expiresAt),
+    index("share_tokens_expires_at_idx")
+      .on(t.expiresAt)
+      .where(sql`${t.expiresAt} IS NOT NULL`),
   ],
 );
 

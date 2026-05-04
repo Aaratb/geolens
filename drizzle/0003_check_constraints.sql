@@ -10,6 +10,18 @@ ALTER TABLE "scans" DROP CONSTRAINT IF EXISTS "scans_score_aeo_range";
 ALTER TABLE "scans" ADD CONSTRAINT "scans_score_aeo_range"
   CHECK ("score_aeo" IS NULL OR ("score_aeo" >= 0 AND "score_aeo" <= 100));
 
+ALTER TABLE "scans" DROP CONSTRAINT IF EXISTS "scans_score_visibility_range";
+ALTER TABLE "scans" ADD CONSTRAINT "scans_score_visibility_range"
+  CHECK ("score_visibility" IS NULL OR ("score_visibility" >= 0 AND "score_visibility" <= 100));
+
+ALTER TABLE "scans" DROP CONSTRAINT IF EXISTS "scans_score_hygiene_range";
+ALTER TABLE "scans" ADD CONSTRAINT "scans_score_hygiene_range"
+  CHECK ("score_hygiene" IS NULL OR ("score_hygiene" >= 0 AND "score_hygiene" <= 100));
+
+ALTER TABLE "scans" DROP CONSTRAINT IF EXISTS "scans_score_citability_range";
+ALTER TABLE "scans" ADD CONSTRAINT "scans_score_citability_range"
+  CHECK ("score_citability" IS NULL OR ("score_citability" >= 0 AND "score_citability" <= 100));
+
 ALTER TABLE "scans" DROP CONSTRAINT IF EXISTS "scans_citation_rate_range";
 ALTER TABLE "scans" ADD CONSTRAINT "scans_citation_rate_range"
   CHECK ("citation_rate_pct" IS NULL OR ("citation_rate_pct" >= 0 AND "citation_rate_pct" <= 100));

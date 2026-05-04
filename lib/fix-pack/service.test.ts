@@ -111,7 +111,13 @@ describe("generateOrGetFixPack", () => {
   });
 
   it("returns an in-progress pack without generating again", async () => {
-    const existing = fixPack({ status: "generating", payload: null, model: null, costCents: null });
+    const existing = fixPack({
+      status: "generating",
+      payload: null,
+      model: null,
+      costCents: null,
+      updatedAt: new Date(),
+    });
     const testStore = store({ getByScanId: vi.fn(async () => existing) });
     const generator = vi.fn(async () => ({ payload, prompt: "p", model: "m", costCents: 1 }));
 
@@ -121,6 +127,37 @@ describe("generateOrGetFixPack", () => {
     expect(result.generated).toBe(false);
     expect(generator).not.toHaveBeenCalled();
     expect(testStore.startGenerating).not.toHaveBeenCalled();
+  });
+
+  it("reclaims a stale generating pack and generates again", async () => {
+    const stale = fixPack({
+      status: "generating",
+      payload: null,
+      model: null,
+      costCents: null,
+      updatedAt: new Date("2000-01-01T00:00:00.000Z"),
+    });
+    const reclaimed = fixPack({ status: "generating", payload: null, model: null, costCents: null });
+    const testStore = store({
+      getByScanId: vi.fn(async () => stale),
+      startGenerating: vi.fn(async () => ({ row: reclaimed, started: true })),
+    });
+    const generator = vi.fn(async () => ({
+      payload,
+      prompt: "p",
+      model: "openai/gpt-4o-mini",
+      costCents: 1,
+    }));
+
+    const result = await generateOrGetFixPack(scan, { store: testStore, generator });
+
+    expect(result.status).toBe("completed");
+    expect(result.generated).toBe(true);
+    expect(testStore.startGenerating).toHaveBeenCalledWith({
+      scanId: scan.header.id,
+      requestedBy: null,
+    });
+    expect(generator).toHaveBeenCalledOnce();
   });
 
   it("creates, generates, and marks a new pack complete", async () => {
