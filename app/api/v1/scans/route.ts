@@ -18,7 +18,7 @@ import { setScanFailed } from "@/lib/scan/persist";
 import { canonicalUrlKey } from "@/lib/crawl";
 import { normalizeUrl } from "@/lib/crawl/url";
 import { extractIp, hashIp, limitScan } from "@/lib/rate-limit";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { ensureUserSynced, getCurrentUser } from "@/lib/auth/current-user";
 import { track } from "@/lib/telemetry/track";
 
 export const maxDuration = 300;
@@ -30,6 +30,20 @@ const Body = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handlePost(req);
+  } catch (err) {
+    // Never bubble an unhandled exception out as an empty 500 — the landing
+    // form interprets any non-JSON 500 as "Network error" and confuses users.
+    console.error("[POST /api/v1/scans] unhandled", err);
+    return NextResponse.json(
+      { error: "internal_error", message: "Could not start scan. Please try again." },
+      { status: 500 },
+    );
+  }
+}
+
+async function handlePost(req: NextRequest) {
   let payload: z.infer<typeof Body>;
   try {
     payload = Body.parse(await req.json());
@@ -43,6 +57,17 @@ export async function POST(req: NextRequest) {
   }
 
   const user = await getCurrentUser();
+  // Mirror the Clerk session into our local users table so the FK on
+  // scans.user_id always resolves, even if the Clerk webhook is misconfigured
+  // or hasn't fired yet for this account.
+  if (user) {
+    try {
+      await ensureUserSynced(user);
+    } catch (err) {
+      console.error("[POST /api/v1/scans] ensureUserSynced failed", err);
+      // Fall through — we'll insert the scan as anonymous below if FK fails.
+    }
+  }
   const ip = extractIp(req.headers);
   const ipHash = hashIp(ip);
 
