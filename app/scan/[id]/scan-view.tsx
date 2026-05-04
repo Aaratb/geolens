@@ -104,11 +104,94 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
       ) : null}
 
       {state.status === "failed" && state.failure ? (
-        <div className="surface rounded-md p-4 text-sm">
-          <div className="font-semibold mb-1">Scan failed at {state.failure.stage}</div>
-          <div className="marginalia">{state.failure.reason}</div>
-        </div>
+        <FailureCard stage={state.failure.stage} reason={state.failure.reason} />
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * Map known failure stage codes to user-friendly messaging. Anything not
+ * in the table renders the raw stage as a fallback.
+ */
+function failureCopy(stage: string): { title: string; body: string; suggestion?: string } {
+  if (stage.startsWith("crawl/robots_disallowed")) {
+    return {
+      title: "This site disallows automated audits.",
+      body: "The site's robots.txt blocks our crawler — and we respect that. We can't pull pages or run Lighthouse, but the AEO engine probes might still work for the brand.",
+      suggestion: "Submit a different site you own, or we can offer a manual review at launch.",
+    };
+  }
+  if (stage.startsWith("crawl/network")) {
+    return {
+      title: "We couldn't reach the site.",
+      body: "The fetch failed before we got a response. This usually means the site is unreachable from our crawler — bot protection, a private network, or a self-loop (you can't audit GEOlens from inside GEOlens).",
+      suggestion: "Try a publicly-resolvable URL hosted somewhere other than this deployment.",
+    };
+  }
+  if (stage.startsWith("crawl/timeout")) {
+    return {
+      title: "The site was too slow to fetch.",
+      body: "Our crawler waited 10 seconds and gave up. The target site might be under load or behind aggressive rate limiting.",
+      suggestion: "Try again in a minute, or pick a different page.",
+    };
+  }
+  if (stage.startsWith("crawl/http_error")) {
+    return {
+      title: "The site returned an error.",
+      body: `The page returned a non-2xx HTTP status (${stage}). Most often this means the URL is wrong, behind a login, or returning a 403 to bots.`,
+      suggestion: "Double-check the URL and that the page is publicly accessible.",
+    };
+  }
+  if (stage.startsWith("crawl/non_html")) {
+    return {
+      title: "That URL isn't an HTML page.",
+      body: "We can only audit HTML pages — the URL responded with a non-HTML content type (likely a PDF, image, or API).",
+      suggestion: "Submit the page that links to this resource instead.",
+    };
+  }
+  if (stage.startsWith("crawl/invalid_url")) {
+    return {
+      title: "That URL didn't validate.",
+      body: "Either it's malformed, missing a protocol, points to a private IP, or uses an unsupported scheme.",
+      suggestion: "Try the full URL with https:// prefix.",
+    };
+  }
+  if (stage === "uncaught-error") {
+    return {
+      title: "Something unexpected went wrong.",
+      body: "We hit an error we didn't plan for. The team has been notified.",
+    };
+  }
+  return { title: "Scan failed.", body: stage };
+}
+
+function FailureCard({ stage, reason }: { stage: string; reason: string }) {
+  const copy = failureCopy(stage);
+  return (
+    <div className="surface rounded-xl p-5">
+      <div
+        className="flex items-center gap-2 font-mono-tabular text-[11px] uppercase tracking-[0.18em] mb-3"
+        style={{ color: "var(--color-score-bad-dark)" }}
+      >
+        <span
+          className="w-1.5 h-1.5 rounded-full"
+          style={{ background: "var(--color-score-bad-dark)" }}
+        />
+        Scan failed
+      </div>
+      <h3 className="font-display text-[20px] font-semibold mb-2" style={{ color: "var(--ink)" }}>
+        {copy.title}
+      </h3>
+      <p className="text-[14px] marginalia leading-[1.6]">{copy.body}</p>
+      {copy.suggestion ? (
+        <p className="text-[14px] marginalia leading-[1.6] mt-3">
+          <span style={{ color: "var(--ink)" }}>Try:</span> {copy.suggestion}
+        </p>
+      ) : null}
+      <div className="mt-4 font-mono-tabular text-[10px] uppercase tracking-[0.18em] marginalia">
+        {stage} · {reason}
+      </div>
     </div>
   );
 }

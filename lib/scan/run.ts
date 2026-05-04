@@ -120,15 +120,27 @@ export async function runScan(input: RunScanInput): Promise<RunScanOutput> {
 
   if (!crawlOut.homepage) {
     const err = crawlOut.errors[0]?.error;
-    // Surface the underlying network/fetch reason in the failed event so
-    // we don't lose detail (was just "network" before — useless for triage).
     const detail =
       err && "message" in err ? err.message : err && "status" in err ? String(err.status) : "";
-    const reason = err ? `${err.kind}${detail ? `: ${detail}` : ""}` : "unknown";
-    console.error(`[scan ${input.scanId}] crawl failed`, err);
-    await sink.publish({ type: "scan.failed", stage: "crawl", reason });
-    await setScanFailed(input.scanId, "crawl-failed", input.db);
-    throw new Error(`crawl failed: ${reason}`);
+    // Map error kinds to specific stage codes so the UI can surface friendly
+    // copy. We do NOT throw — this is an expected failure mode for sites
+    // whose robots.txt disallows us, sites behind a paywall/auth, sites with
+    // bot protection (Cloudflare 403s), or our own Vercel self-loop. Set
+    // scans.status=failed with a meaningful stage and stop cleanly.
+    const stage = err ? `crawl/${err.kind}` : "crawl/unknown";
+    const reason = detail || (err?.kind ?? "unknown");
+    console.warn(`[scan ${input.scanId}] crawl failed: ${stage}`, err);
+    await sink.publish({ type: "scan.failed", stage, reason });
+    await setScanFailed(input.scanId, stage, input.db);
+    return {
+      scoreSeo: null,
+      scoreAeo: 0,
+      totalPages: 0,
+      durationMs: Date.now() - start,
+      costCents: 0,
+      enginesProbed: 0,
+      enginesSkipped: profile.engines.length,
+    };
   }
   const allPages = [crawlOut.homepage, ...crawlOut.internalPages];
   await sink.publish({
