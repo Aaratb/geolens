@@ -3,6 +3,7 @@
  * The submit form is a client component; everything else is server-rendered.
  */
 import Link from "next/link";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { SubmitForm } from "./_landing/submit-form";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://geolens.xyz";
@@ -84,9 +85,20 @@ function Masthead() {
       </div>
       <nav className="flex items-center gap-6 text-[13px]">
         <Link href="/methodology" className="hover:underline">Methodology</Link>
-        <Link href="/sign-in" className="bg-[var(--ink)] text-[var(--bg)] px-3 py-1 text-[11px] tracking-[0.18em] uppercase">
-          Sign in
-        </Link>
+        <SignedOut>
+          <Link
+            href="/sign-in"
+            className="bg-[var(--ink)] text-[var(--bg)] px-3 py-1 text-[11px] tracking-[0.18em] uppercase"
+          >
+            Sign in
+          </Link>
+        </SignedOut>
+        <SignedIn>
+          <UserButton
+            afterSignOutUrl="/"
+            appearance={{ elements: { avatarBox: "h-7 w-7" } }}
+          />
+        </SignedIn>
       </nav>
     </header>
   );
