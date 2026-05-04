@@ -64,7 +64,7 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
 
       {/* top-3 gaps (free) */}
       <section>
-        <SectionHeader>Top 3 gaps</SectionHeader>
+        <EditorialHeader eyebrow="Findings · Top 3" title="The three things to fix first." />
         {state.topThree.length === 0 ? (
           <div className="grid gap-2">
             <Skeleton className="h-16" />
@@ -119,11 +119,23 @@ function StatusDot({ status }: { status: string }) {
   );
 }
 
-function SectionHeader({ children }: { children: React.ReactNode }) {
+/**
+ * Editorial section header: serif title under a mono-tabular eyebrow with a
+ * thin rule. Matches the specimen-audit pattern on the landing so the two
+ * surfaces feel like the same publication.
+ */
+function EditorialHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div className="mb-3 flex items-center gap-2">
-      <span className="font-mono-tabular text-[11px] uppercase tracking-[0.18em] marginalia">{children}</span>
-      <span className="flex-1 h-px" style={{ background: "var(--rule)" }} />
+    <div className="mb-5 rule-b pb-3">
+      <div className="font-mono-tabular text-[10px] uppercase tracking-[0.22em] marginalia">
+        {eyebrow}
+      </div>
+      <h2
+        className="font-display text-[20px] font-semibold leading-tight mt-1"
+        style={{ color: "var(--ink)" }}
+      >
+        {title}
+      </h2>
     </div>
   );
 }
@@ -137,7 +149,10 @@ function DrillDown({
 }) {
   return (
     <section className="relative">
-      <SectionHeader>Detailed findings</SectionHeader>
+      <EditorialHeader
+        eyebrow="Findings · Drill-down"
+        title="The full audit, in detail."
+      />
       <div className={locked ? "pointer-events-none select-none filter blur-md" : ""}>
         {state.allGaps.length <= 3 ? (
           <div className="grid gap-2">
