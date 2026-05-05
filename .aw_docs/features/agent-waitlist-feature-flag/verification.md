@@ -50,13 +50,12 @@ Fixes applied:
 The fully authenticated Fix Pack happy path was not browser-tested end to end because it requires all of the following seeded/runtime conditions:
 
 - a signed-in Clerk user;
-- `FIX_PACK_ENABLED=true` and a beta allowlist match;
 - an existing completed scan owned by that identity;
 - database state including scan findings/probes;
 - LLM generation credentials or a mocked server path.
 
-The lower-level behavior is covered by unit/API tests and Phase 7 review, but a seeded browser journey should be added before enabling the feature for real beta users.
+The lower-level behavior is covered by unit/API tests and Phase 7 review, but a seeded browser journey should be added before broad live promotion.
 
 ## Outcome
 
-Phase 8 is approved for the current available QA scope. The next workflow phase can proceed, with the seeded authenticated Fix Pack journey recorded as a pre-beta QA follow-up.
+Phase 8 is approved for the current available QA scope. The next workflow phase can proceed, with the seeded authenticated Fix Pack journey recorded as a follow-up.

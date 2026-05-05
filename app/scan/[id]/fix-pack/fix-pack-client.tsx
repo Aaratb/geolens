@@ -13,53 +13,41 @@ import {
 } from "@/lib/fix-pack/ui-state";
 import { trackFixPackClientEvent } from "@/lib/telemetry/client";
 import { Button } from "@/components/ui/button";
-import { WaitlistDialog } from "../waitlist-dialog";
 
-const FETCH_TIMEOUT_MS = 15_000;
+const FETCH_TIMEOUT_MS = 35_000;
 // 35 x 1200ms ~= 42s, leaving room under the 60s route maxDuration.
 const POLL_ATTEMPTS = 35;
 const POLL_INTERVAL_MS = 1200;
 
 interface Props {
   scanId: string;
-  eligible: boolean;
   initialStatus: FixPackUiStatus;
   initialPayload: FixPackPayload | null;
   initialFixPackId: string | null;
 }
 
-export function FixPackClient({
-  scanId,
-  eligible,
-  initialStatus,
-  initialPayload,
-  initialFixPackId,
-}: Props) {
+export function FixPackClient({ scanId, initialStatus, initialPayload, initialFixPackId }: Props) {
   const [status, setStatus] = useState<FixPackUiStatus>(initialStatus);
   const [payload, setPayload] = useState<FixPackPayload | null>(initialPayload);
   const [fixPackId, setFixPackId] = useState<string | null>(initialFixPackId);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [waitlistOpen, setWaitlistOpen] = useState(false);
   const trackedInstallViewRef = useRef(false);
   const generateControllerRef = useRef<AbortController | null>(null);
 
-  const action = getFixPackActionState({ eligible, status });
+  const action = getFixPackActionState({ status });
   const downloadHref = getFixPackDownloadHref(scanId);
 
   async function refreshPack(signal?: AbortSignal): Promise<FixPackUiStatus> {
     const { data: raw, res } = await fetchJson(`/api/v1/scans/${scanId}/fix-pack`, { signal });
     if (!res.ok) {
+      if (res.status === 401) {
+        throw new Error("Sign in to continue using Fix Pack.");
+      }
       throw new Error("Could not refresh Fix Pack.");
     }
     const data = parseStatusResponse(raw);
-    if (!data.eligible) {
-      setStatus("not_generated");
-      setPayload(null);
-      setFixPackId(null);
-      return "not_generated";
-    }
     setStatus(data.status);
     setPayload(data.fixPack);
     setFixPackId(data.fixPack?.id ?? null);
@@ -169,17 +157,6 @@ export function FixPackClient({
   }
 
   function onPrimaryAction() {
-    if (!eligible) {
-      trackFixPackClientEvent({
-        event: "fixpack.waitlist.clicked",
-        scanId,
-        status,
-        source: "fix_pack_page",
-        action: "join_waitlist",
-      });
-      setWaitlistOpen(true);
-      return;
-    }
     void generatePack();
   }
 
@@ -244,7 +221,7 @@ export function FixPackClient({
               ))}
             </>
           ) : (
-            <EmptyFixPackState eligible={eligible} />
+            <EmptyFixPackState />
           )}
         </div>
 
@@ -263,7 +240,7 @@ export function FixPackClient({
             Fix cards and the agent file are AI-generated from your scan data. Review before
             applying.
           </p>
-          {status === "completed" && eligible ? (
+          {status === "completed" ? (
             <Button asChild variant="accent" className="mt-5 w-full">
               <a
                 href={downloadHref}
@@ -284,7 +261,7 @@ export function FixPackClient({
           ) : (
             <Button
               type="button"
-              variant={action.tone === "outline" ? "outline" : "accent"}
+              variant="accent"
               disabled={busy || action.disabled}
               onClick={onPrimaryAction}
               className="mt-5 w-full"
@@ -333,13 +310,6 @@ export function FixPackClient({
           ) : null}
         </aside>
       </section>
-
-      <WaitlistDialog
-        open={waitlistOpen}
-        onOpenChange={setWaitlistOpen}
-        scanId={scanId}
-        source="fix_pack_cta"
-      />
     </>
   );
 }
@@ -457,19 +427,18 @@ function InstallStep({ label, body }: { label: string; body: string }) {
   );
 }
 
-function EmptyFixPackState({ eligible }: { eligible: boolean }) {
+function EmptyFixPackState() {
   return (
     <div className="surface rounded-xl p-6">
       <div className="font-mono-tabular marginalia text-[10px] tracking-[0.22em] uppercase">
-        {eligible ? "Ready to generate" : "Beta access"}
+        Ready to generate
       </div>
       <h2 className="font-display mt-2 text-[24px] leading-tight font-semibold">
-        {eligible ? "Create the first Fix Pack for this scan." : "Join the Fix Pack waitlist."}
+        Create the first Fix Pack for this scan.
       </h2>
       <p className="marginalia mt-3 text-[14px] leading-[1.7]">
-        {eligible
-          ? "GEOlens will turn the scan's top findings into copy-paste assets, validation steps, and an agent-ready Markdown file."
-          : "Fix Pack is currently behind an allowlist. Join the list and we will prioritize access for this scan."}
+        GEOlens will turn the scan&apos;s top findings into copy-paste assets, validation steps, and
+        an agent-ready Markdown file.
       </p>
     </div>
   );

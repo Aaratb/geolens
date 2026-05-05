@@ -50,7 +50,7 @@ Both configured projects passed:
 
 ## Known Unavailable Check
 
-The authenticated completed-scan Fix Pack happy-path browser journey is still not part of this hard gate because it requires seeded Clerk identity, beta allowlist, completed owned scan data, and generation credentials or mocks. This remains a pre-beta QA follow-up, not a Phase 11 blocker.
+The authenticated completed-scan Fix Pack happy-path browser journey is still not part of this hard gate because it requires seeded Clerk identity, completed owned scan data, and generation credentials or mocks. This remains a live-feature QA follow-up, not a Phase 11 blocker.
 
 ## Outcome
 

@@ -1,21 +1,16 @@
 export type FixPackUiStatus = "not_generated" | "generating" | "completed" | "failed";
 
 export interface FixPackActionInput {
-  eligible: boolean;
   status: FixPackUiStatus;
 }
 
 export interface FixPackActionState {
   label: string;
   disabled: boolean;
-  tone: "accent" | "muted" | "outline";
+  tone: "accent" | "muted";
 }
 
 export function getFixPackActionState(input: FixPackActionInput): FixPackActionState {
-  if (!input.eligible) {
-    return { label: "Join the waitlist", disabled: false, tone: "outline" };
-  }
-
   switch (input.status) {
     case "not_generated":
     case "failed":

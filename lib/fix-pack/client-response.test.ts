@@ -4,6 +4,7 @@ import { parseFixPackGenerateResponse, parseFixPackStatusResponse } from "./clie
 const payload = {
   cards: [
     {
+      findingId: null,
       displayId: "GL-01",
       title: "Add llms.txt",
       severity: "high",
@@ -14,8 +15,10 @@ const payload = {
       assetText: "# Example llms.txt",
       checklist: ["Create llms.txt", "Deploy it"],
       validationSteps: ["Open /llms.txt"],
+      caveat: null,
     },
     {
+      findingId: null,
       displayId: "GL-02",
       title: "Rewrite metadata",
       severity: "medium",
@@ -26,8 +29,10 @@ const payload = {
       assetText: "Title: Example",
       checklist: ["Update title", "Update description"],
       validationSteps: ["Inspect metadata"],
+      caveat: null,
     },
     {
+      findingId: null,
       displayId: "GL-03",
       title: "Add pricing FAQ",
       severity: "medium",
@@ -38,6 +43,7 @@ const payload = {
       assetText: "FAQ draft",
       checklist: ["Draft FAQ", "Review claims"],
       validationSteps: ["Compare with pricing page"],
+      caveat: null,
     },
   ],
   prompt: "Fix the top three GEOlens findings.",
@@ -71,6 +77,15 @@ describe("Fix Pack client response contracts", () => {
         eligible: true,
         status: "completed",
         fixPack: { id: "not-a-pack" },
+      }),
+    ).toThrow();
+  });
+
+  it("rejects retired waitlist eligibility responses", () => {
+    expect(() =>
+      parseFixPackStatusResponse({
+        eligible: false,
+        reason: "not_allowlisted",
       }),
     ).toThrow();
   });

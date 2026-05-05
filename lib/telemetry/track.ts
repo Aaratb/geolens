@@ -21,7 +21,6 @@ export type TelemetryEvent =
   | "share.link.created"
   | "share.link.opened"
   | "fixpack.cta.clicked"
-  | "fixpack.waitlist.clicked"
   | "fixpack.generation.started"
   | "fixpack.generation.completed"
   | "fixpack.generation.failed"

@@ -583,7 +583,7 @@ Status: complete for the available local QA scope.
 
 Phase 8 covered full local regression gates, production build verification, local browser smoke coverage, and new read-only Fix Pack API smoke checks that do not require seeded scan data.
 
-The authenticated completed-scan Fix Pack happy path remains unavailable locally without a seeded Clerk user, allowlisted beta identity, completed owned scan, database findings/probes, and generation credentials or a server-side mock.
+The authenticated completed-scan Fix Pack happy path remains unavailable locally without a seeded Clerk user, completed owned scan, database findings/probes, and generation credentials or a server-side mock.
 
 ### Validation Evidence
 
@@ -622,7 +622,7 @@ Fresh QA evidence was written to `.aw_docs/features/agent-waitlist-feature-flag/
 
 ### Phase 8 Status
 
-Phase 8 is approved for available local QA. Proceed to Phase 9 with the seeded authenticated Fix Pack happy-path browser journey recorded as a pre-beta QA follow-up.
+Phase 8 is approved for available local QA. Proceed to Phase 9 with the seeded authenticated Fix Pack happy-path browser journey recorded as a follow-up.
 
 ## Phase 9: Docs And i18n
 
@@ -679,7 +679,7 @@ No active failure signal exists for a debug/fix pass:
 - Phase 8 unit, typecheck, lint, build, and local Playwright smoke gates passed.
 - Phase 9 only changed documentation and workflow artifacts.
 
-The authenticated completed-scan Fix Pack happy path remains a pre-beta QA follow-up because it needs seeded Clerk/database/generation conditions. It is not a reproduced defect in the current local QA scope.
+The authenticated completed-scan Fix Pack happy path remains a live-feature QA follow-up because it needs seeded Clerk/database/generation conditions. It is not a reproduced defect in the current local QA scope.
 
 ### Phase 10 Status
 
@@ -717,7 +717,7 @@ Results:
 
 Playwright reused the local app already serving at `http://localhost:3000`; no duplicate dev server was started.
 
-The authenticated completed-scan Fix Pack happy-path browser journey remains a seeded pre-beta QA follow-up and is not a Phase 11 blocker.
+The authenticated completed-scan Fix Pack happy-path browser journey remains a seeded live-feature QA follow-up and is not a Phase 11 blocker.
 
 ### Setup Audit Artifact
 
@@ -750,7 +750,7 @@ Phase 11 then reran the hard gate with full tests, lint, typecheck, build, and b
 
 ### Open Specialist Follow-Up
 
-The only remaining specialist-style follow-up is pre-beta QA for the authenticated completed-scan Fix Pack happy path, which requires seeded Clerk/database/generation conditions. This remains tracked as a QA follow-up, not a Phase 12 blocker.
+The only remaining specialist-style follow-up is live-feature QA for the authenticated completed-scan Fix Pack happy path, which requires seeded Clerk/database/generation conditions. This remains tracked as a QA follow-up, not a Phase 12 blocker.
 
 ### Phase 12 Status
 

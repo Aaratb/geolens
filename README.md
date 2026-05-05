@@ -21,19 +21,13 @@ GEOlens audits any public URL the way Lighthouse audits performance — but for 
 
 See `.aw_docs/features/geolens/spec.md` for the full architecture and `.aw_docs/features/geolens/adrs/` for the load-bearing decisions.
 
-## Fix Pack beta
+## Fix Pack
 
-Fix Pack is the gated follow-on to a completed GEOlens scan. It turns the top scan gaps into three repair cards, a copy-paste implementation prompt, and a downloadable `agent.md` file for Claude Code or Cursor. The first version is intentionally scan-grounded and does not include autonomous web research.
-
-Access is server-gated by:
-
-- `FIX_PACK_ENABLED`
-- `FIX_PACK_BETA_USER_IDS`
-- `FIX_PACK_BETA_EMAILS`
+Fix Pack is the live follow-on for authenticated owners of completed GEOlens scans. It turns the top scan gaps into three repair cards, a copy-paste implementation prompt, and a downloadable `agent.md` file for Claude Code or Cursor. The first version is intentionally scan-grounded and does not include autonomous web research.
 
 Core routes:
 
-- `GET /api/v1/scans/[id]/fix-pack` checks owner access, eligibility, and existing generation state.
+- `GET /api/v1/scans/[id]/fix-pack` checks authenticated owner access and existing generation state.
 - `POST /api/v1/scans/[id]/fix-pack` generates or returns a persisted pack, with rate limiting and stale-generation recovery.
 - `GET /api/v1/scans/[id]/fix-pack/agent.md` downloads the generated Markdown agent file.
 - `POST /api/v1/fix-pack/events` records narrow client interaction telemetry.
@@ -108,7 +102,7 @@ lib/
   inference/            Brand & category inference
   scan/                 Scan orchestrator (spawn-detach + Redis pub/sub)
   score/                SEO + AEO scoring formulas
-  fix-pack/             Gated Fix Pack generator, persistence, Markdown renderer
+  fix-pack/             Fix Pack generator, persistence, Markdown renderer
   storage/              Vercel Blob abstraction
   ui/                   shadcn components + theme provider
 middleware.ts           Clerk route protection
@@ -131,10 +125,10 @@ We never persist raw HTML. `scan_pages_crawled.signals` stores computed metrics 
 - ✅ **M2 Scan Engine** — crawler, PSI, 4 LLM probes via Vercel AI Gateway, hygiene, citability, scoring
 - ✅ **M3 Streaming UI** — editorial landing, dark streaming report, Clerk sign-in unlock, progress trail
 - ✅ **M4 Polish + Launch** — share + OG image, methodology, GDPR privacy, terms, telemetry, rate limit, daily cleanup cron
-- ✅ **Fix Pack beta build** — feature-flagged repair cards, prompt output, agent Markdown download, generation rate limit, and QA smoke coverage
+- ✅ **Fix Pack build** — live repair cards, prompt output, agent Markdown download, generation rate limit, and QA smoke coverage
 - ✅ **Latest Phase 7 Review** — Fix Pack blockers repaired and approved by code, TypeScript, security, and database reviewers
 - ✅ **Latest Phase 8 QA** — 148 unit tests and 42 local Playwright desktop/mobile smoke tests passing
 - ⏳ **Vercel Pro upgrade** — needed to unblock scan execution (60s → 300s function timeout). Until then: landing + waitlist work; scans time out cleanly with a `failed` state.
-- ⏳ **v1.5** — autonomous Fix Pack research and workflow automation; current beta focuses on scan-grounded implementation assets.
+- ⏳ **v1.5** — autonomous Fix Pack research and workflow automation; current version focuses on scan-grounded implementation assets.
 
 See `.aw_docs/features/geolens/SHIP_STATUS.md` for full status; `tasks.md` for the original M1–M4 breakdown.

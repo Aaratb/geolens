@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const FIX_PACK_CLIENT_EVENTS = [
   "fixpack.cta.clicked",
-  "fixpack.waitlist.clicked",
   "fixpack.prompt.copied",
   "fixpack.install.viewed",
 ] as const;
@@ -15,7 +14,7 @@ export const FixPackClientTelemetryBody = z
     status: z.enum(["not_generated", "generating", "completed", "failed"]).optional(),
     source: z.enum(["scan_report", "fix_pack_page", "agent_panel", "install_panel"]).optional(),
     action: z
-      .enum(["open", "generate", "copy_prompt", "download", "join_waitlist", "view_install"])
+      .enum(["open", "sign_in", "generate", "copy_prompt", "download", "view_install"])
       .optional(),
   })
   .strict();

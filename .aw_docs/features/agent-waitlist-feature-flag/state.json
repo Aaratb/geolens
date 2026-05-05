@@ -131,7 +131,7 @@
   },
   "requirements_summary": {
     "scope": "Hybrid fixer-output generator for completed scan top-three gaps.",
-    "gating": "Selected waitlisted users behind server-side env gates: FIX_PACK_ENABLED plus beta allowlisted user IDs/emails.",
+    "gating": "Fix Pack is live for authenticated scan owners; the earlier waitlist and beta allowlist gate has been removed.",
     "primary_output": "Cursor/Claude Code optimized copy-paste prompt, downloadable Markdown agent file, and fix assets.",
     "success_metric": "agent_usage",
     "prd_decision": "Use Fix Pack as the v1 product framing; separate fixer page is the recommended canonical experience, with gap-card and scan-summary CTAs as entry points.",
@@ -140,7 +140,7 @@
     "prd_refinement_before_design": "Design should center on three fix cards plus an agent-guide install panel. Product copy should emphasize scan-grounded repair briefs, not generic AI SEO automation.",
     "design_decision": "Use a scan-report-native layout: report CTA -> Fix Pack page -> three fix cards -> sticky prompt/download/install rail. Keep the Fix Pack on the dark report surface and align typography, rules, marginalia, and accent usage with the existing landing and scan pages.",
     "design_review_status": "Static prototype revised for GEOlens brand consistency; deterministic checks and focused code review passed with browser visual review still pending before implementation.",
-    "api_impact_decision": "Use env-based server gates for v1 beta (FIX_PACK_ENABLED plus allowlisted user IDs/emails), persist one Fix Pack per completed scan in scan_fix_packs, expose GET/POST /api/v1/scans/[id]/fix-pack plus GET /agent.md, and implement /scan/[id]/fix-pack as the canonical owner-only page."
+    "api_impact_decision": "Persist one Fix Pack per completed scan in scan_fix_packs, expose GET/POST /api/v1/scans/[id]/fix-pack plus GET /agent.md, and implement /scan/[id]/fix-pack as the canonical owner-only page."
   },
   "build_progress": {
     "stage": "build",
@@ -347,7 +347,7 @@
     ],
     "failures": [],
     "unavailable": [
-      "Authenticated completed-scan Fix Pack happy-path browser journey requires seeded Clerk user, allowlisted beta identity, completed owned scan, database findings/probes, and generation credentials or a server-side mock"
+      "Authenticated completed-scan Fix Pack happy-path browser journey requires seeded Clerk user, completed owned scan, database findings/probes, and generation credentials or a server-side mock"
     ],
     "fixes_applied": [
       "Added read-only Fix Pack API smoke tests",
@@ -360,7 +360,7 @@
       ".aw_docs/features/agent-waitlist-feature-flag/state.json"
     ],
     "recommended_next_commands": [
-      "Proceed to Phase 9 with seeded authenticated Fix Pack browser QA as a pre-beta follow-up"
+      "Proceed to Phase 9 with seeded authenticated Fix Pack browser QA as a follow-up"
     ]
   },
   "docs_i18n_progress": {
@@ -412,7 +412,7 @@
       "No active reproduction, failing check, alert, or regression report exists for a debug pass"
     ],
     "not_a_blocker": [
-      "Authenticated completed-scan Fix Pack happy-path browser QA remains a pre-beta seeded test follow-up, not a reproduced local defect"
+      "Authenticated completed-scan Fix Pack happy-path browser QA remains a seeded live-feature test follow-up, not a reproduced local defect"
     ],
     "written_artifacts": [
       ".aw_docs/features/agent-waitlist-feature-flag/execution.md",
@@ -447,7 +447,7 @@
     ],
     "failures": [],
     "unavailable": [
-      "Authenticated completed-scan Fix Pack happy-path browser journey remains a seeded pre-beta QA follow-up"
+      "Authenticated completed-scan Fix Pack happy-path browser journey remains a seeded live-feature QA follow-up"
     ],
     "written_artifacts": [
       ".aw_docs/features/agent-waitlist-feature-flag/setup-audit.md",
@@ -473,7 +473,7 @@
     ],
     "blocking_findings": [],
     "advisory_notes": [
-      "Seeded authenticated completed-scan Fix Pack browser journey remains a pre-beta QA follow-up"
+      "Seeded authenticated completed-scan Fix Pack browser journey remains a live-feature QA follow-up"
     ],
     "written_artifacts": [
       ".aw_docs/features/agent-waitlist-feature-flag/execution.md",

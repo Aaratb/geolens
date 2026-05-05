@@ -4,15 +4,15 @@
 
 ## Documentation Updates
 
-Updated `README.md` with a concise Fix Pack beta section covering:
+Updated `README.md` with a concise Fix Pack section covering:
 
 - product behavior: scan-grounded repair cards, implementation prompt, and downloadable `agent.md`;
 - v1 boundary: no autonomous web research in this release;
-- server-side feature gates: `FIX_PACK_ENABLED`, `FIX_PACK_BETA_USER_IDS`, `FIX_PACK_BETA_EMAILS`;
+- authenticated owner-scoped live access without the earlier beta allowlist gate;
 - API surfaces: status, generation, Markdown download, and client telemetry;
 - source-of-truth links to this feature folder and Phase 8 verification evidence.
 
-The README project layout now includes `lib/fix-pack/`, and the roadmap distinguishes the shipped gated Fix Pack beta from future autonomous workflow/research work.
+The README project layout now includes `lib/fix-pack/`, and the roadmap distinguishes the shipped scan-grounded Fix Pack from future autonomous workflow/research work.
 
 ## i18n Assessment
 

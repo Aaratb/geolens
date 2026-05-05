@@ -1,7 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth/current-user";
-import { canAccessScan, type FixPackScanHeader } from "@/lib/fix-pack/access";
+import {
+  canAccessScan,
+  claimAnonymousScanForUser,
+  type FixPackScanHeader,
+} from "@/lib/fix-pack/access";
 import { getFixPackEligibility } from "@/lib/fix-pack/eligibility";
 import {
   generateOrGetFixPack,
@@ -20,6 +24,13 @@ export const maxDuration = 60;
 
 const Body = z.object({}).strict();
 const ScanId = z.string().uuid();
+
+function unauthenticatedResponse(): NextResponse {
+  return NextResponse.json(
+    { error: "unauthenticated", message: "Sign in to use Fix Pack." },
+    { status: 401 },
+  );
+}
 
 function assertCompletedScan(scan: FixPackScanHeader): NextResponse | null {
   if (scan.status !== "completed") {
@@ -43,21 +54,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  if (!canAccessScan(scan, user, ipHash)) {
+  const ownedScan = await claimAnonymousScanForUser(scan, user, ipHash);
+  if (!canAccessScan(ownedScan, user, ipHash)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
-  const notCompleted = assertCompletedScan(scan);
-  if (notCompleted) return notCompleted;
-
   const eligibility = getFixPackEligibility(user);
   if (!eligibility.eligible) {
-    // GET is a status probe for the UI, so ineligible users receive a
-    // renderable reason. POST treats the same state as a forbidden action.
-    return NextResponse.json(eligibility);
+    return unauthenticatedResponse();
   }
 
-  const existing = await getFixPackByScanId(scan.id);
+  const notCompleted = assertCompletedScan(ownedScan);
+  if (notCompleted) return notCompleted;
+
+  const existing = await getFixPackByScanId(ownedScan.id);
   if (!existing) {
     return NextResponse.json({
       eligible: true,
@@ -111,17 +121,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  if (!canAccessScan(scan, user, ipHash)) {
+  const ownedScan = await claimAnonymousScanForUser(scan, user, ipHash);
+  if (!canAccessScan(ownedScan, user, ipHash)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
-  const notCompleted = assertCompletedScan(scan);
-  if (notCompleted) return notCompleted;
-
   const eligibility = getFixPackEligibility(user);
   if (!eligibility.eligible) {
-    return NextResponse.json(eligibility, { status: 403 });
+    return unauthenticatedResponse();
   }
+
+  const notCompleted = assertCompletedScan(ownedScan);
+  if (notCompleted) return notCompleted;
 
   const limit = await limitFixPackGeneration({ userId: user?.id ?? null, ipHash });
   if (!limit.ok) {
@@ -132,7 +143,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     );
   }
 
-  const details = await getScanWithDetails(scan.id);
+  const details = await getScanWithDetails(ownedScan.id);
   if (!details) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
@@ -144,7 +155,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         track({
           event: "fixpack.generation.started",
           userId: user?.id ?? null,
-          props: { scanId: scan.id, fixPackId: row.id },
+          props: { scanId: ownedScan.id, fixPackId: row.id },
         });
       },
     });
@@ -165,7 +176,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         event: "fixpack.generation.completed",
         userId: user?.id ?? null,
         props: {
-          scanId: scan.id,
+          scanId: ownedScan.id,
           fixPackId: result.fixPack.id,
           cardCount: result.payload.cards.length,
           costCents: result.costCents,
@@ -176,7 +187,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         event: "cost.fixpack",
         userId: user?.id ?? null,
         props: {
-          scanId: scan.id,
+          scanId: ownedScan.id,
           fixPackId: result.fixPack.id,
           costCents: result.costCents,
           model: result.model,
@@ -201,7 +212,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       event: "fixpack.generation.failed",
       userId: user?.id ?? null,
       props: {
-        scanId: scan.id,
+        scanId: ownedScan.id,
         reason: safeGenerationError(err),
       },
     });

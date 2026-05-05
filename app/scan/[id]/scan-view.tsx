@@ -3,7 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useScanStream } from "@/lib/hooks/use-scan-stream";
 import { trackFixPackClientEvent } from "@/lib/telemetry/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +12,6 @@ import { GapCard } from "./gap-card";
 import { SignInOverlay } from "./sign-in-overlay";
 import { ProgressTrail } from "./progress-trail";
 import { ShareButton } from "./share-button";
-import { WaitlistDialog } from "./waitlist-dialog";
 
 interface Props {
   scanId: string;
@@ -52,12 +51,12 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
     <div className="space-y-8">
       {/* status row */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 font-mono-tabular text-[11px] uppercase tracking-[0.18em] marginalia">
+        <div className="font-mono-tabular marginalia flex items-center gap-2 text-[11px] tracking-[0.18em] uppercase">
           <StatusDot status={state.status} />
           {state.status === "streaming" ? "scanning" : state.status}
         </div>
         {brand ? (
-          <div className="text-[12px] marginalia">
+          <div className="marginalia text-[12px]">
             {brand}
             {category ? <span className="opacity-60"> · {category}</span> : null}
           </div>
@@ -66,9 +65,9 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
 
       {/* banner */}
       {state.banner ? (
-        <div className="surface rounded-md p-3 text-[13px] flex items-start gap-3">
+        <div className="surface flex items-start gap-3 rounded-md p-3 text-[13px]">
           <span
-            className="mt-1 w-1.5 h-1.5 rounded-full shrink-0"
+            className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full"
             style={{ background: "var(--color-score-warn-dark)" }}
           />
           <span>{state.banner}</span>
@@ -93,7 +92,7 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
         ) : (
           <div className="space-y-2">
             {state.topThree.map((g) => (
-              <GapCard key={g.id} gap={g} scanId={scanId} />
+              <GapCard key={g.id} gap={g} scanId={scanId} signedIn={!!isSignedIn} />
             ))}
           </div>
         )}
@@ -104,18 +103,19 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
       ) : null}
 
       {/* sign-in gated drill-down sections */}
-      <DrillDown state={state} locked={showSignInWall} scanId={scanId} />
+      <DrillDown state={state} locked={showSignInWall} scanId={scanId} signedIn={!!isSignedIn} />
 
       {state.status === "complete" && state.durationMs !== null ? (
-        <div className="rule-t pt-6 marginalia text-[12px] flex items-center justify-between gap-4">
+        <div className="rule-t marginalia flex items-center justify-between gap-4 pt-6 text-[12px]">
           <span>
-            Done in <span className="font-mono-tabular">{Math.round(state.durationMs / 1000)}s</span>
+            Done in{" "}
+            <span className="font-mono-tabular">{Math.round(state.durationMs / 1000)}s</span>
             {" · "}
             <span className="font-mono-tabular">${(state.costCents ?? 0) / 100}</span> in AI compute
           </span>
           <div className="flex items-center gap-3">
             <ShareButton scanId={scanId} enabled={!!isSignedIn} />
-            <span className="font-mono-tabular text-[10px] uppercase tracking-[0.22em]">
+            <span className="font-mono-tabular text-[10px] tracking-[0.22em] uppercase">
               scan complete
             </span>
           </div>
@@ -130,63 +130,39 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
 }
 
 function FixPackReportCta({ scanId, signedIn }: { scanId: string; signedIn: boolean }) {
-  const [open, setOpen] = useState(false);
+  const href = signedIn
+    ? `/scan/${scanId}/fix-pack`
+    : `/sign-in?redirect_url=${encodeURIComponent(`/scan/${scanId}/fix-pack`)}`;
 
   return (
-    <>
-      <section className="surface rounded-xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <div className="font-mono-tabular text-[10px] uppercase tracking-[0.22em] marginalia">
-            Fix Pack · Beta
-          </div>
-          <h2 className="font-display text-[22px] leading-tight font-semibold mt-1">
-            Turn the top findings into an agent-ready repair pack.
-          </h2>
-          <p className="text-[13px] marginalia leading-[1.7] mt-2 max-w-xl">
-            Generate copy-paste assets, a coding-agent prompt, and a downloadable Markdown file
-            for Claude Code or Cursor.
-          </p>
+    <section className="surface flex flex-col gap-4 rounded-xl p-5 md:flex-row md:items-center md:justify-between">
+      <div>
+        <div className="font-mono-tabular marginalia text-[10px] tracking-[0.22em] uppercase">
+          Fix Pack
         </div>
-        {signedIn ? (
-          <Link
-            href={`/scan/${scanId}/fix-pack`}
-            onClick={() =>
-              trackFixPackClientEvent({
-                event: "fixpack.cta.clicked",
-                scanId,
-                source: "scan_report",
-                action: "open",
-              })
-            }
-            className="inline-flex items-center justify-center rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-          >
-            Open Fix Pack
-          </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              trackFixPackClientEvent({
-                event: "fixpack.waitlist.clicked",
-                scanId,
-                source: "scan_report",
-                action: "join_waitlist",
-              });
-              setOpen(true);
-            }}
-            className="inline-flex items-center justify-center rounded-md border border-[var(--rule)] px-4 py-2 text-sm font-medium hover:bg-[var(--surface-muted)]"
-          >
-            Join waitlist
-          </button>
-        )}
-      </section>
-      <WaitlistDialog
-        open={open}
-        onOpenChange={setOpen}
-        scanId={scanId}
-        source="fix_pack_cta"
-      />
-    </>
+        <h2 className="font-display mt-1 text-[22px] leading-tight font-semibold">
+          Turn the top findings into an agent-ready repair pack.
+        </h2>
+        <p className="marginalia mt-2 max-w-xl text-[13px] leading-[1.7]">
+          Generate copy-paste assets, a coding-agent prompt, and a downloadable Markdown file for
+          Claude Code or Cursor.
+        </p>
+      </div>
+      <Link
+        href={href}
+        onClick={() =>
+          trackFixPackClientEvent({
+            event: "fixpack.cta.clicked",
+            scanId,
+            source: "scan_report",
+            action: signedIn ? "open" : "sign_in",
+          })
+        }
+        className="inline-flex items-center justify-center rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+      >
+        {signedIn ? "Open Fix Pack" : "Sign in to open Fix Pack"}
+      </Link>
+    </section>
   );
 }
 
@@ -258,25 +234,25 @@ function FailureCard({ stage, reason }: { stage: string; reason: string }) {
   return (
     <div className="surface rounded-xl p-5">
       <div
-        className="flex items-center gap-2 font-mono-tabular text-[11px] uppercase tracking-[0.18em] mb-3"
+        className="font-mono-tabular mb-3 flex items-center gap-2 text-[11px] tracking-[0.18em] uppercase"
         style={{ color: "var(--color-score-bad-dark)" }}
       >
         <span
-          className="w-1.5 h-1.5 rounded-full"
+          className="h-1.5 w-1.5 rounded-full"
           style={{ background: "var(--color-score-bad-dark)" }}
         />
         Scan failed
       </div>
-      <h3 className="font-display text-[20px] font-semibold mb-2" style={{ color: "var(--ink)" }}>
+      <h3 className="font-display mb-2 text-[20px] font-semibold" style={{ color: "var(--ink)" }}>
         {copy.title}
       </h3>
-      <p className="text-[14px] marginalia leading-[1.6]">{copy.body}</p>
+      <p className="marginalia text-[14px] leading-[1.6]">{copy.body}</p>
       {copy.suggestion ? (
-        <p className="text-[14px] marginalia leading-[1.6] mt-3">
+        <p className="marginalia mt-3 text-[14px] leading-[1.6]">
           <span style={{ color: "var(--ink)" }}>Try:</span> {copy.suggestion}
         </p>
       ) : null}
-      <div className="mt-4 font-mono-tabular text-[10px] uppercase tracking-[0.18em] marginalia">
+      <div className="font-mono-tabular marginalia mt-4 text-[10px] tracking-[0.18em] uppercase">
         {stage} · {reason}
       </div>
     </div>
@@ -293,7 +269,7 @@ function StatusDot({ status }: { status: string }) {
   return (
     <span
       aria-hidden="true"
-      className={`inline-block w-1.5 h-1.5 rounded-full ${status === "streaming" ? "animate-pulse" : ""}`}
+      className={`inline-block h-1.5 w-1.5 rounded-full ${status === "streaming" ? "animate-pulse" : ""}`}
       style={{ background: color }}
     />
   );
@@ -306,12 +282,12 @@ function StatusDot({ status }: { status: string }) {
  */
 function EditorialHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div className="mb-5 rule-b pb-3">
-      <div className="font-mono-tabular text-[10px] uppercase tracking-[0.22em] marginalia">
+    <div className="rule-b mb-5 pb-3">
+      <div className="font-mono-tabular marginalia text-[10px] tracking-[0.22em] uppercase">
         {eyebrow}
       </div>
       <h2
-        className="font-display text-[20px] font-semibold leading-tight mt-1"
+        className="font-display mt-1 text-[20px] leading-tight font-semibold"
         style={{ color: "var(--ink)" }}
       >
         {title}
@@ -324,21 +300,20 @@ function DrillDown({
   state,
   locked,
   scanId,
+  signedIn,
 }: {
   state: ReturnType<typeof useScanStream>;
   locked: boolean;
   scanId: string;
+  signedIn: boolean;
 }) {
   return (
     <section className="relative">
-      <EditorialHeader
-        eyebrow="Findings · Drill-down"
-        title="The full audit, in detail."
-      />
+      <EditorialHeader eyebrow="Findings · Drill-down" title="The full audit, in detail." />
       {/* `inert` blocks Tab/focus on locked content; CSS pointer-events-none
           alone is keyboard-bypassable. (Phase 7 review: CR-H-3) */}
       <div
-        className={locked ? "pointer-events-none select-none filter blur-md" : ""}
+        className={locked ? "pointer-events-none blur-md filter select-none" : ""}
         // React 19 types `inert` as boolean; pass true when locked.
         inert={locked || undefined}
         aria-hidden={locked || undefined}
@@ -352,7 +327,7 @@ function DrillDown({
         ) : (
           <div className="space-y-2">
             {state.allGaps.slice(3).map((g) => (
-              <GapCard key={g.id} gap={g} scanId={scanId} />
+              <GapCard key={g.id} gap={g} scanId={scanId} signedIn={signedIn} />
             ))}
           </div>
         )}

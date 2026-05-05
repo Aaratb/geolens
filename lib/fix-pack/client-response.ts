@@ -8,17 +8,11 @@ const CompletedFixPackSchema = FixPackPayloadSchema.extend({
   version: z.string().min(1),
 });
 
-export const FixPackStatusResponseSchema = z.discriminatedUnion("eligible", [
-  z.object({
-    eligible: z.literal(true),
-    status: FixPackUiStatusSchema,
-    fixPack: CompletedFixPackSchema.nullable(),
-  }),
-  z.object({
-    eligible: z.literal(false),
-    reason: z.string().min(1),
-  }),
-]);
+export const FixPackStatusResponseSchema = z.object({
+  eligible: z.literal(true),
+  status: FixPackUiStatusSchema,
+  fixPack: CompletedFixPackSchema.nullable(),
+});
 
 export const FixPackGenerateResponseSchema = z.union([
   z.object({

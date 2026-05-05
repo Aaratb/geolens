@@ -10,6 +10,7 @@ const now = new Date("2026-05-04T00:00:00.000Z");
 const payload: FixPackPayload = {
   cards: [
     {
+      findingId: null,
       displayId: "GL-01",
       title: "Add llms.txt",
       severity: "high",
@@ -20,8 +21,10 @@ const payload: FixPackPayload = {
       assetText: "# Example llms.txt",
       checklist: ["Create llms.txt", "Deploy it"],
       validationSteps: ["Open /llms.txt"],
+      caveat: null,
     },
     {
+      findingId: null,
       displayId: "GL-02",
       title: "Rewrite metadata",
       severity: "medium",
@@ -32,8 +35,10 @@ const payload: FixPackPayload = {
       assetText: "Title: Example",
       checklist: ["Update title", "Update description"],
       validationSteps: ["Inspect metadata"],
+      caveat: null,
     },
     {
+      findingId: null,
       displayId: "GL-03",
       title: "Add pricing FAQ",
       severity: "medium",
