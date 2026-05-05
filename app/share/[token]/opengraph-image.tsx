@@ -7,7 +7,7 @@
  * segment is automatically used for og:image of pages in that segment.
  */
 import { ImageResponse } from "next/og";
-import { resolveShareToken } from "@/lib/scan/share";
+import { resolveShareTokenReadonly } from "@/lib/scan/share";
 import { getScanHeader } from "@/lib/scan/queries";
 
 export const runtime = "nodejs";
@@ -16,8 +16,9 @@ export const alt = "GEOlens audit";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default async function OpengraphImage({ params }: { params: { token: string } }) {
-  const resolved = await resolveShareToken(params.token);
+export default async function OpengraphImage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params;
+  const resolved = await resolveShareTokenReadonly(token);
   const scan = resolved ? await getScanHeader(resolved.scanId) : null;
 
   const hostname = scan?.hostname ?? "geolens.xyz";

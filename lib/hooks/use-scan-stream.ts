@@ -11,6 +11,8 @@ import type { Gap } from "@/lib/score/gaps";
 
 export interface ScanStreamState {
   status: "connecting" | "streaming" | "complete" | "failed";
+  transportStatus: "connecting" | "live" | "reconnecting" | "stalled" | "resolved";
+  lastEventAtMs: number | null;
   url: string | null;
   brandName: string | null;
   category: string | null;
@@ -36,6 +38,8 @@ export interface ScanStreamState {
 
 const initial: ScanStreamState = {
   status: "connecting",
+  transportStatus: "connecting",
+  lastEventAtMs: null,
   url: null,
   brandName: null,
   category: null,
@@ -59,10 +63,41 @@ const initial: ScanStreamState = {
   costCents: null,
 };
 
-function reducer(state: ScanStreamState, ev: ScanEvent): ScanStreamState {
+type StreamEvent =
+  | ScanEvent
+  | { type: "stream.reset" }
+  | { type: "stream.live" }
+  | { type: "stream.reconnecting" }
+  | { type: "stream.stalled" };
+
+function reducer(state: ScanStreamState, ev: StreamEvent): ScanStreamState {
   switch (ev.type) {
+    case "stream.reset":
+      return initial;
+    case "stream.live":
+      return {
+        ...state,
+        transportStatus: state.status === "complete" || state.status === "failed" ? "resolved" : "live",
+        lastEventAtMs: Date.now(),
+      };
+    case "stream.reconnecting":
+      return {
+        ...state,
+        transportStatus: state.status === "complete" || state.status === "failed" ? "resolved" : "reconnecting",
+      };
+    case "stream.stalled":
+      return {
+        ...state,
+        transportStatus: state.status === "complete" || state.status === "failed" ? "resolved" : "stalled",
+      };
     case "scan.started":
-      return { ...state, status: "streaming", url: ev.url };
+      return {
+        ...state,
+        status: "streaming",
+        transportStatus: "live",
+        lastEventAtMs: Date.now(),
+        url: ev.url,
+      };
     case "crawl.started":
       return state;
     case "crawl.page.fetched":
@@ -110,13 +145,28 @@ function reducer(state: ScanStreamState, ev: ScanEvent): ScanStreamState {
     case "gaps.ranked":
       return { ...state, topThree: ev.topThree, allGaps: ev.allGaps };
     case "scan.completed":
-      return { ...state, status: "complete", durationMs: ev.durationMs, costCents: ev.costCents };
+      return {
+        ...state,
+        status: "complete",
+        transportStatus: "resolved",
+        lastEventAtMs: Date.now(),
+        durationMs: ev.durationMs,
+        costCents: ev.costCents,
+      };
     case "scan.failed":
-      return { ...state, status: "failed", failure: { stage: ev.stage, reason: ev.reason } };
+      return {
+        ...state,
+        status: "failed",
+        transportStatus: "resolved",
+        lastEventAtMs: Date.now(),
+        failure: { stage: ev.stage, reason: ev.reason },
+      };
     case "scan.timeout":
       return {
         ...state,
         status: "failed",
+        transportStatus: "resolved",
+        lastEventAtMs: Date.now(),
         failure: { stage: "stream", reason: ev.reason },
       };
     case "budget.tripped":
@@ -131,10 +181,18 @@ function reducer(state: ScanStreamState, ev: ScanEvent): ScanStreamState {
 export function useScanStream(scanId: string | null): ScanStreamState {
   const [state, dispatch] = useReducer(reducer, initial);
   const seenIds = useRef<Set<string>>(new Set());
+  const lastEventAt = useRef<number>(Date.now());
+  const statusRef = useRef<ScanStreamState["status"]>("connecting");
+
+  useEffect(() => {
+    statusRef.current = state.status;
+  }, [state.status]);
 
   useEffect(() => {
     if (!scanId) return;
+    dispatch({ type: "stream.reset" });
     seenIds.current.clear();
+    lastEventAt.current = Date.now();
 
     const url = `/api/v1/scans/${scanId}/stream`;
     const es = new EventSource(url);
@@ -142,6 +200,8 @@ export function useScanStream(scanId: string | null): ScanStreamState {
     const handler = (event: MessageEvent) => {
       if (event.lastEventId && seenIds.current.has(event.lastEventId)) return;
       if (event.lastEventId) seenIds.current.add(event.lastEventId);
+      lastEventAt.current = Date.now();
+      dispatch({ type: "stream.live" });
       try {
         const data = JSON.parse(event.data) as ScanEvent;
         dispatch(data);
@@ -171,17 +231,32 @@ export function useScanStream(scanId: string | null): ScanStreamState {
     ];
     for (const t of types) es.addEventListener(t, handler as EventListener);
     es.addEventListener("message", handler as EventListener);
+    es.addEventListener("open", () => {
+      lastEventAt.current = Date.now();
+      dispatch({ type: "stream.live" });
+    });
 
     es.addEventListener("error", () => {
-      // The browser reconnects automatically on recoverable errors. Only mark
-      // failed when the stream has clearly ended without scan.completed.
+      if (statusRef.current === "streaming" || statusRef.current === "connecting") {
+        dispatch({ type: "stream.reconnecting" });
+      }
     });
+
+    const stallTimer = window.setInterval(() => {
+      if (statusRef.current !== "streaming" && statusRef.current !== "connecting") return;
+      if (Date.now() - lastEventAt.current > 12000) {
+        dispatch({ type: "stream.stalled" });
+      }
+    }, 2000);
 
     return () => {
       for (const t of types) es.removeEventListener(t, handler as EventListener);
+      window.clearInterval(stallTimer);
       es.close();
     };
   }, [scanId]);
 
   return state;
 }
+
+export const __testing = { initial, reducer };

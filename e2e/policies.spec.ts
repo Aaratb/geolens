@@ -5,13 +5,12 @@
  */
 import { expect, test } from "@playwright/test";
 
-test("methodology page shows scoring formula", async ({ page }) => {
+test("methodology page shows verification-first framing", async ({ page }) => {
   await page.goto("/methodology");
-  await expect(page.getByRole("heading", { name: /How we score what AI sees/i })).toBeVisible();
-  await expect(page.getByText(/Performance · 25%/)).toBeVisible();
-  await expect(page.getByText(/Engine Visibility · 60%/)).toBeVisible();
-  // The multiplier code-block should be present
-  await expect(page.getByText(/probe_score = base/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /How we verify what AI says/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /How receipts are captured/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Scoring details \(open-book\)/i })).toBeVisible();
+  await expect(page.getByText(/Expand exact weights and multiplier formula/i)).toBeVisible();
 });
 
 test("privacy page is GDPR-compliant", async ({ page }) => {

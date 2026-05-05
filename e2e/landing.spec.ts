@@ -13,12 +13,12 @@ test.describe("landing", () => {
     await expect(page.getByText("Vol. 1 · Issue 01 · Beta")).toBeVisible();
 
     // Wordmark
-    await expect(page.getByRole("heading", { level: 1, name: /sees your site/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /misses your brand/ })).toBeVisible();
 
     // Submit form
     const input = page.getByPlaceholder("yourbrand.com");
     await expect(input).toBeVisible();
-    await expect(page.getByRole("button", { name: /Begin audit/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Diagnose my site/ })).toBeVisible();
   });
 
   test("specimen audit shows three numbered findings", async ({ page }) => {
@@ -39,7 +39,7 @@ test.describe("landing", () => {
     await page.goto("/");
     await page.getByRole("link", { name: /Methodology/i }).first().click();
     await expect(page).toHaveURL(/\/methodology$/);
-    await expect(page.getByRole("heading", { name: /How we score/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /How we verify/i })).toBeVisible();
   });
 
   test("emits Organization JSON-LD (eat our own dogfood)", async ({ page }) => {

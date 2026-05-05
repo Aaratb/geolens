@@ -14,11 +14,22 @@ export function SubmitForm() {
     if (!url.trim() || submitting) return;
     setSubmitting(true);
     setError(null);
+    let normalized = url.trim();
+    if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) {
+      normalized = `https://${normalized}`;
+    }
+    try {
+      new URL(normalized);
+    } catch {
+      setError("Please enter a valid URL, e.g. yourbrand.com");
+      setSubmitting(false);
+      return;
+    }
     try {
       const res = await fetch("/api/v1/scans", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: normalized }),
       });
       const data = (await res.json()) as { scanId?: string; error?: string; message?: string };
       if (!res.ok) {
@@ -28,6 +39,9 @@ export function SubmitForm() {
       }
       if (data.scanId) {
         router.push(`/scan/${data.scanId}`);
+      } else {
+        setError("Unexpected response. Please try again.");
+        setSubmitting(false);
       }
     } catch {
       setError("Network error. Please try again.");
@@ -61,7 +75,7 @@ export function SubmitForm() {
           disabled={submitting || !url.trim()}
           className="font-display text-[16px] font-semibold underline-offset-4 hover:underline disabled:opacity-40"
         >
-          {submitting ? "Starting..." : "Begin audit →"}
+          {submitting ? "Starting..." : "Diagnose my site →"}
         </button>
       </form>
       {error ? (

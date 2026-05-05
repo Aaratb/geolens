@@ -21,15 +21,20 @@ export function SignInOverlay({ scanId }: Props) {
   const href = `/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}`;
   return (
     <SignedOut>
-      <div className="absolute inset-0 grid place-items-center pointer-events-auto">
-        <Link
-          href={href}
-          prefetch={false}
-          className="surface rounded-xl px-4 py-2.5 text-[13px] flex items-center gap-2 hover:opacity-90"
-        >
-          <Lock className="h-3.5 w-3.5" />
-          Sign in to unlock the full report
-        </Link>
+      <div className="absolute inset-x-0 bottom-0 pointer-events-auto">
+        <div className="px-3 pb-4 pt-16 bg-gradient-to-b from-transparent via-[rgba(10,10,11,0.82)] to-[rgba(10,10,11,0.96)]">
+          <div className="mx-auto w-fit text-center">
+            <p className="marginalia mb-2 text-[12px]">Unlock full drill-down diagnostics and Fix Pack actions.</p>
+            <Link
+              href={href}
+              prefetch={false}
+              className="surface rounded-xl px-4 py-2.5 text-[13px] inline-flex items-center gap-2 hover:opacity-90"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              Sign in to unlock the full report
+            </Link>
+          </div>
+        </div>
       </div>
     </SignedOut>
   );

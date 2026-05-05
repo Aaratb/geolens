@@ -7,7 +7,7 @@ import type { ScanStreamState } from "@/lib/hooks/use-scan-stream";
 
 export function ScoreTiles({ state }: { state: ScanStreamState }) {
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       <Tile label="SEO score" value={state.scoreSeo} suffix="" />
       <Tile label="AEO score" value={state.scoreAeo} suffix="" />
       <Tile label="Citation rate" value={state.citationRatePct} suffix="%" kind="rate" />

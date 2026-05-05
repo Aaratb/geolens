@@ -7,7 +7,7 @@
  */
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { resolveShareToken } from "@/lib/scan/share";
+import { resolveShareToken, resolveShareTokenReadonly } from "@/lib/scan/share";
 import { getScanWithDetails } from "@/lib/scan/queries";
 import { GapCard } from "@/app/scan/[id]/gap-card";
 import { LensMark } from "@/components/brand/lens-mark";
@@ -21,7 +21,7 @@ export async function generateMetadata({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const resolved = await resolveShareToken(token);
+  const resolved = await resolveShareTokenReadonly(token);
   if (!resolved) return { title: "Shared scan" };
   const data = await getScanWithDetails(resolved.scanId);
   if (!data) return { title: "Shared scan" };
@@ -92,12 +92,13 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
                     why: f.why,
                     detail: f.detail ?? undefined,
                     fixHint: f.fixHint ?? undefined,
-                    effort: (f.effort ?? undefined) as Gap["effort"],
+                    effort: toGapEffort(f.effort),
                     scoreImpact: f.scoreImpact ?? 0,
                     isTop3: true,
                     _priority: 0,
                   } as Gap
                 }
+                showAction={false}
               />
             ))}
           </div>
@@ -124,12 +125,13 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
                       why: f.why,
                       detail: f.detail ?? undefined,
                       fixHint: f.fixHint ?? undefined,
-                      effort: (f.effort ?? undefined) as Gap["effort"],
+                      effort: toGapEffort(f.effort),
                       scoreImpact: f.scoreImpact ?? 0,
                       isTop3: false,
                       _priority: 0,
                     } as Gap
                   }
+                  showAction={false}
                 />
               ))}
             </div>
@@ -149,7 +151,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
             className="inline-block mt-6 px-5 py-2.5 rounded-md text-sm"
             style={{ background: "var(--color-accent)", color: "#fff" }}
           >
-            Begin audit →
+            Diagnose my site →
           </Link>
         </section>
       </main>
@@ -174,7 +176,6 @@ function SectionHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
 }
 
 function Tile({ label, value, suffix }: { label: string; value: number | null; suffix: string }) {
-  if (value === null) return null;
   return (
     <div className="surface rounded-xl p-4">
       <div className="font-mono-tabular text-[11px] uppercase tracking-wider marginalia">{label}</div>
@@ -182,9 +183,20 @@ function Tile({ label, value, suffix }: { label: string; value: number | null; s
         className="mt-2 font-mono-tabular text-3xl font-semibold"
         style={{ color: "var(--ink)" }}
       >
-        {value}
-        {suffix}
+        {value === null ? "—" : `${value}${suffix}`}
       </div>
     </div>
   );
+}
+
+function toGapEffort(raw: string | null): Gap["effort"] | undefined {
+  switch (raw) {
+    case "30min":
+    case "few-hours":
+    case "days":
+    case "weeks":
+      return raw;
+    default:
+      return undefined;
+  }
 }

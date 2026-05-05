@@ -7,7 +7,7 @@ import { sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { shareTokens } from "@/lib/db/schema";
 
-export async function resolveShareToken(token: string): Promise<{ scanId: string } | null> {
+async function lookupShareToken(token: string): Promise<{ scanId: string } | null> {
   const [row] = await db
     .select({ scanId: shareTokens.scanId, expiresAt: shareTokens.expiresAt })
     .from(shareTokens)
@@ -15,6 +15,16 @@ export async function resolveShareToken(token: string): Promise<{ scanId: string
     .limit(1);
   if (!row) return null;
   if (row.expiresAt && row.expiresAt < new Date()) return null;
+  return { scanId: row.scanId };
+}
+
+export async function resolveShareTokenReadonly(token: string): Promise<{ scanId: string } | null> {
+  return lookupShareToken(token);
+}
+
+export async function resolveShareToken(token: string): Promise<{ scanId: string } | null> {
+  const resolved = await lookupShareToken(token);
+  if (!resolved) return null;
   // Best-effort view counter. Catch the rejection so a Neon hiccup doesn't
   // crash the share page. (Phase 7 review: REL-C-2)
   void db
@@ -24,5 +34,5 @@ export async function resolveShareToken(token: string): Promise<{ scanId: string
     .catch((err) => {
       console.warn("[share] view-counter increment failed", err);
     });
-  return { scanId: row.scanId };
+  return resolved;
 }

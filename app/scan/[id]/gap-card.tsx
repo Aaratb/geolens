@@ -14,10 +14,12 @@ export function GapCard({
   gap,
   scanId,
   signedIn = false,
+  showAction = true,
 }: {
   gap: Gap;
   scanId?: string;
   signedIn?: boolean;
+  showAction?: boolean;
 }) {
   const fixPackHref = scanId
     ? signedIn
@@ -50,7 +52,7 @@ export function GapCard({
           ) : null}
         </div>
       </div>
-      {fixPackHref ? (
+      {showAction && fixPackHref ? (
         <Link
           href={fixPackHref}
           className="text-[12px] whitespace-nowrap hover:opacity-80"
@@ -58,14 +60,14 @@ export function GapCard({
         >
           {signedIn ? "Fix with our agent →" : "Sign in to fix →"}
         </Link>
-      ) : (
+      ) : showAction ? (
         <span
           className="text-[12px] whitespace-nowrap opacity-60"
           style={{ color: "var(--color-accent-soft)" }}
         >
           Fix with our agent →
         </span>
-      )}
+      ) : null}
     </div>
   );
 }

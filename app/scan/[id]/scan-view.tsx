@@ -50,10 +50,10 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
   return (
     <div className="space-y-8">
       {/* status row */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between" role="status" aria-live="polite">
         <div className="font-mono-tabular marginalia flex items-center gap-2 text-[11px] tracking-[0.18em] uppercase">
           <StatusDot status={state.status} />
-          {state.status === "streaming" ? "scanning" : state.status}
+          {state.status === "streaming" ? "scanning" : state.status} · {state.transportStatus}
         </div>
         {brand ? (
           <div className="marginalia text-[12px]">
@@ -62,6 +62,8 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
           </div>
         ) : null}
       </div>
+
+      <OutcomeSummary state={state} />
 
       {/* banner */}
       {state.banner ? (
@@ -92,15 +94,18 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
         ) : (
           <div className="space-y-2">
             {state.topThree.map((g) => (
-              <GapCard key={g.id} gap={g} scanId={scanId} signedIn={!!isSignedIn} />
+              <GapCard key={g.id} gap={g} scanId={scanId} signedIn={!!isSignedIn} showAction={false} />
             ))}
           </div>
         )}
       </section>
 
-      {state.status === "complete" ? (
-        <FixPackReportCta scanId={scanId} signedIn={!!isSignedIn} />
-      ) : null}
+      <ActionRail
+        scanId={scanId}
+        status={state.status}
+        signedIn={!!isSignedIn}
+        canShare={state.status === "complete" && !!isSignedIn}
+      />
 
       {/* sign-in gated drill-down sections */}
       <DrillDown state={state} locked={showSignInWall} scanId={scanId} signedIn={!!isSignedIn} />
@@ -113,12 +118,7 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
             {" · "}
             <span className="font-mono-tabular">${(state.costCents ?? 0) / 100}</span> in AI compute
           </span>
-          <div className="flex items-center gap-3">
-            <ShareButton scanId={scanId} enabled={!!isSignedIn} />
-            <span className="font-mono-tabular text-[10px] tracking-[0.22em] uppercase">
-              scan complete
-            </span>
-          </div>
+          <span className="font-mono-tabular text-[10px] tracking-[0.22em] uppercase">scan complete</span>
         </div>
       ) : null}
 
@@ -129,39 +129,118 @@ export function ScanView({ scanId, initialBrand, initialCategory }: Props) {
   );
 }
 
-function FixPackReportCta({ scanId, signedIn }: { scanId: string; signedIn: boolean }) {
-  const href = signedIn
-    ? `/scan/${scanId}/fix-pack`
-    : `/sign-in?redirect_url=${encodeURIComponent(`/scan/${scanId}/fix-pack`)}`;
+function OutcomeSummary({ state }: { state: ReturnType<typeof useScanStream> }) {
+  if (state.status === "streaming" || state.status === "connecting") {
+    return (
+      <section className="surface rounded-xl p-5" role="status" aria-live="polite">
+        <div className="font-mono-tabular marginalia text-[10px] tracking-[0.22em] uppercase">
+          Outcome
+        </div>
+        <h1 className="font-display mt-1 text-[24px] leading-tight font-semibold">
+          We are building your diagnosis.
+        </h1>
+        <p className="marginalia mt-2 text-[13px] leading-[1.7]">
+          You will see prioritized gaps as soon as evidence is ranked. Keep this tab open while we
+          finish probing engines and scoring impact.
+        </p>
+      </section>
+    );
+  }
+
+  if (state.status === "failed") {
+    return (
+      <section className="surface rounded-xl p-5" role="status" aria-live="assertive">
+        <div className="font-mono-tabular marginalia text-[10px] tracking-[0.22em] uppercase">
+          Outcome
+        </div>
+        <h1 className="font-display mt-1 text-[24px] leading-tight font-semibold">This run did not complete.</h1>
+        <p className="marginalia mt-2 text-[13px] leading-[1.7]">
+          We captured partial evidence but could not finalize ranked findings. Use the guidance below
+          to retry with a reachable public URL.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="surface rounded-xl p-5" role="status" aria-live="polite">
+      <div className="font-mono-tabular marginalia text-[10px] tracking-[0.22em] uppercase">Outcome</div>
+      <h1 className="font-display mt-1 text-[24px] leading-tight font-semibold">
+        Diagnosis ready. Prioritize the first three gaps now.
+      </h1>
+      <p className="marginalia mt-2 text-[13px] leading-[1.7]">
+        This report is complete. Review the top findings for fastest lift, then continue into full
+        drill-down and Fix Pack actions.
+      </p>
+    </section>
+  );
+}
+
+function ActionRail({
+  scanId,
+  status,
+  signedIn,
+  canShare,
+}: {
+  scanId: string;
+  status: ReturnType<typeof useScanStream>["status"];
+  signedIn: boolean;
+  canShare: boolean;
+}) {
+  let href: string | null = null;
+  let label: string | null = null;
+  let secondary: React.ReactNode = null;
+
+  if (status === "complete" && signedIn) {
+    href = `/scan/${scanId}/fix-pack`;
+    label = "Open Fix Pack";
+    secondary = <ShareButton scanId={scanId} enabled={canShare} />;
+  } else if (status === "complete" && !signedIn) {
+    href = `/sign-in?redirect_url=${encodeURIComponent(`/scan/${scanId}`)}`;
+    label = "Sign in to unlock the full report";
+  } else if (status === "failed") {
+    href = "/";
+    label = "Run another diagnosis";
+  }
+
+  if (!href || !label) return null;
 
   return (
     <section className="surface flex flex-col gap-4 rounded-xl p-5 md:flex-row md:items-center md:justify-between">
       <div>
         <div className="font-mono-tabular marginalia text-[10px] tracking-[0.22em] uppercase">
-          Fix Pack
+          Recommended next step
         </div>
         <h2 className="font-display mt-1 text-[22px] leading-tight font-semibold">
-          Turn the top findings into an agent-ready repair pack.
+          {status === "failed"
+            ? "Retry with a public page to get complete findings."
+            : "Turn these findings into concrete repair actions."}
         </h2>
         <p className="marginalia mt-2 max-w-xl text-[13px] leading-[1.7]">
-          Generate copy-paste assets, a coding-agent prompt, and a downloadable Markdown file for
-          Claude Code or Cursor.
+          {status === "failed"
+            ? "The previous run ended early. Retry to regenerate full evidence and ranked gaps."
+            : "Use Fix Pack for copy-paste assets, coding-agent prompts, and downloadable repair guidance."}
         </p>
       </div>
-      <Link
-        href={href}
-        onClick={() =>
-          trackFixPackClientEvent({
-            event: "fixpack.cta.clicked",
-            scanId,
-            source: "scan_report",
-            action: signedIn ? "open" : "sign_in",
-          })
-        }
-        className="inline-flex items-center justify-center rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-      >
-        {signedIn ? "Open Fix Pack" : "Sign in to open Fix Pack"}
-      </Link>
+      <div className="flex items-center gap-3">
+        {secondary}
+        <Link
+          href={href}
+          onClick={() =>
+            status === "complete"
+              ? trackFixPackClientEvent({
+                  event: "fixpack.cta.clicked",
+                  scanId,
+                  source: "scan_report",
+                  action: signedIn ? "open" : "sign_in",
+                })
+              : undefined
+          }
+          className="inline-flex items-center justify-center rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+        >
+          {label}
+        </Link>
+      </div>
     </section>
   );
 }
@@ -313,21 +392,38 @@ function DrillDown({
       {/* `inert` blocks Tab/focus on locked content; CSS pointer-events-none
           alone is keyboard-bypassable. (Phase 7 review: CR-H-3) */}
       <div
-        className={locked ? "pointer-events-none blur-md filter select-none" : ""}
+        className={
+          locked
+            ? "pointer-events-none select-none opacity-55 [mask-image:linear-gradient(to_bottom,black_58%,transparent_96%)]"
+            : ""
+        }
         // React 19 types `inert` as boolean; pass true when locked.
         inert={locked || undefined}
         aria-hidden={locked || undefined}
       >
-        {state.allGaps.length <= 3 ? (
+        {state.status === "failed" ? (
+          <div className="surface rounded-xl p-4">
+            <p className="marginalia text-[13px] leading-[1.7]">
+              Full drill-down is unavailable because this run ended early.
+            </p>
+          </div>
+        ) : state.status !== "complete" && state.allGaps.length <= 3 ? (
           <div className="grid gap-2">
             <Skeleton className="h-20" />
             <Skeleton className="h-20" />
             <Skeleton className="h-20" />
           </div>
+        ) : state.status === "complete" && state.allGaps.length <= 3 ? (
+          <div className="surface rounded-xl p-4">
+            <p className="marginalia text-[13px] leading-[1.7]">
+              This run only produced the top-priority findings. Re-run the diagnosis for deeper
+              coverage.
+            </p>
+          </div>
         ) : (
           <div className="space-y-2">
             {state.allGaps.slice(3).map((g) => (
-              <GapCard key={g.id} gap={g} scanId={scanId} signedIn={signedIn} />
+              <GapCard key={g.id} gap={g} scanId={scanId} signedIn={signedIn} showAction={false} />
             ))}
           </div>
         )}

@@ -18,24 +18,48 @@ const PROBES: { id: ProbeKind; short: string }[] = [
 
 /**
  * Fills in section-by-section as the SSE stream arrives. Replaces the long
- * "blank → suddenly everything" UX. Hides itself once the scan is complete.
+ * "blank → suddenly everything" UX. On completion/failure it collapses into a
+ * persistent evidence summary instead of disappearing.
  */
 export function ProgressTrail({ state }: { state: ScanStreamState }) {
-  if (state.status === "complete" || state.status === "failed") return null;
-
   const totalProbes = 12;
   const completedProbes = Object.keys(state.probes).length;
   const pagesFetched = state.pages.length;
+  const stageLabel = currentStage(state);
+  const transportLabel = transportCopy(state.transportStatus);
+
+  if (state.status === "complete" || state.status === "failed") {
+    return (
+      <div className="surface rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="font-mono-tabular text-[11px] uppercase tracking-[0.18em] marginalia">
+            How this diagnosis was produced
+          </div>
+          <div className="font-mono-tabular text-[10px] uppercase tracking-[0.16em] marginalia">
+            {state.status === "complete" ? "resolved" : "ended early"}
+          </div>
+        </div>
+        <div className="grid gap-2 md:grid-cols-3 text-[12px]">
+          <SummaryPill label="Pages crawled" value={String(pagesFetched)} />
+          <SummaryPill label="AEO probes" value={`${completedProbes}/${totalProbes}`} />
+          <SummaryPill
+            label="Terminal stage"
+            value={state.status === "complete" ? "ranking complete" : state.failure?.stage ?? "unknown"}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="surface rounded-xl p-4 space-y-4">
+    <div className="surface rounded-xl p-4 space-y-4" role="status" aria-live="polite" aria-atomic="false">
       <div className="flex items-center justify-between">
         <div className="font-mono-tabular text-[11px] uppercase tracking-[0.18em] marginalia flex items-center gap-2">
           <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            className={`w-1.5 h-1.5 rounded-full ${state.transportStatus === "live" ? "animate-pulse" : ""}`}
             style={{ background: "var(--color-accent)" }}
           />
-          Live · {currentStage(state)}
+          {transportLabel} · {stageLabel}
         </div>
         <div className="font-mono-tabular text-[11px] marginalia">
           {pagesFetched > 0 ? `${pagesFetched} pages · ` : ""}
@@ -116,6 +140,17 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
+function SummaryPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="surface rounded-md p-2.5">
+      <div className="font-mono-tabular text-[10px] uppercase tracking-[0.16em] marginalia">{label}</div>
+      <div className="mt-1 text-[13px]" style={{ color: "var(--ink)" }}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
 function ProbeDot({
   done,
   score,
@@ -179,4 +214,19 @@ function currentStage(state: ScanStreamState): string {
   if (state.pages.length > 0) return "crawling";
   if (state.url) return "starting";
   return "connecting";
+}
+
+function transportCopy(status: ScanStreamState["transportStatus"]): string {
+  switch (status) {
+    case "live":
+      return "live";
+    case "reconnecting":
+      return "reconnecting";
+    case "stalled":
+      return "stalled";
+    case "resolved":
+      return "resolved";
+    default:
+      return "connecting";
+  }
 }

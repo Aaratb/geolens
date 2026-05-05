@@ -32,11 +32,11 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "GEOlens — A second opinion on how AI sees your site",
+    default: "GEOlens — AI visibility diagnosis with evidence receipts",
     template: "%s · GEOlens",
   },
   description:
-    "GEOlens audits your site the way Lighthouse audits its performance — but for the AI search era. Probe ChatGPT, Claude, Perplexity, and Gemini for citation, visibility, and on-page AEO hygiene.",
+    "GEOlens diagnoses how AI engines represent your brand using evidence receipts from ChatGPT, Claude, Perplexity, and Gemini, plus prioritized first-fix gap cards.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://geolens.xyz"),
   openGraph: {
     type: "website",
