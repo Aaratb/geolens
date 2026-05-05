@@ -6,6 +6,7 @@ import {
   getFixPackByScanId,
   markFixPackCompleted,
   markFixPackFailed,
+  STALE_FIX_PACK_GENERATION_MS,
   startGeneratingFixPack,
 } from "./store";
 
@@ -76,14 +77,9 @@ export async function generateOrGetFixPack(
   }
 
   if (existing?.status === "generating") {
-    return {
-      status: "generating",
-      fixPack: existing,
-      payload: null,
-      generated: false,
-      model: null,
-      costCents: null,
-    };
+    if (!isStaleGeneratingFixPack(existing)) {
+      return generatingResult(existing);
+    }
   }
 
   const generation = await store.startGenerating({
@@ -108,14 +104,7 @@ export async function generateOrGetFixPack(
       throw new Error("FIX_PACK_UNEXPECTED_STATUS");
     }
 
-    return {
-      status: "generating",
-      fixPack: row,
-      payload: null,
-      generated: false,
-      model: null,
-      costCents: null,
-    };
+    return generatingResult(row);
   }
 
   try {
@@ -159,6 +148,21 @@ function parsePersistedPayload(payload: unknown): FixPackPayload {
   } catch {
     throw new InvalidPersistedFixPackError();
   }
+}
+
+function isStaleGeneratingFixPack(row: ScanFixPack): boolean {
+  return Date.now() - row.updatedAt.getTime() > STALE_FIX_PACK_GENERATION_MS;
+}
+
+function generatingResult(row: ScanFixPack): GeneratingFixPackResult {
+  return {
+    status: "generating",
+    fixPack: row,
+    payload: null,
+    generated: false,
+    model: null,
+    costCents: null,
+  };
 }
 
 export function safeGenerationError(err: unknown): string {

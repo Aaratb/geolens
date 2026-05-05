@@ -28,24 +28,41 @@ test.describe("API contract", () => {
   });
 
   test("SSE stream returns 404 for unknown scan (S-CRIT-1 lock-in)", async ({ request }) => {
-    const res = await request.get(
-      "/api/v1/scans/00000000-0000-0000-0000-000000000000/stream",
-    );
+    const res = await request.get("/api/v1/scans/00000000-0000-0000-0000-000000000000/stream");
     expect(res.status()).toBe(404);
   });
 
   test("POST /api/v1/scans/[id]/claim requires auth", async ({ request }) => {
     // Without a Clerk session, claim must 401 (or 403 — both acceptable
     // markers of "you cannot do this anonymously")
-    const res = await request.post(
-      "/api/v1/scans/00000000-0000-0000-0000-000000000000/claim",
-    );
+    const res = await request.post("/api/v1/scans/00000000-0000-0000-0000-000000000000/claim");
     expect([401, 403, 404]).toContain(res.status());
   });
 
   test("POST /api/v1/waitlist requires a valid email", async ({ request }) => {
     const res = await request.post("/api/v1/waitlist", {
       data: { email: "not-an-email" },
+    });
+    expect(res.status()).toBe(400);
+  });
+
+  test("Fix Pack routes reject invalid scan ids before DB access", async ({ request }) => {
+    const status = await request.get("/api/v1/scans/not-a-uuid/fix-pack");
+    expect(status.status()).toBe(400);
+    expect((await status.json()).error).toBe("invalid_scan_id");
+
+    const generate = await request.post("/api/v1/scans/not-a-uuid/fix-pack", { data: {} });
+    expect(generate.status()).toBe(400);
+    expect((await generate.json()).error).toBe("invalid_scan_id");
+
+    const download = await request.get("/api/v1/scans/not-a-uuid/fix-pack/agent.md");
+    expect(download.status()).toBe(400);
+    expect((await download.json()).error).toBe("invalid_scan_id");
+  });
+
+  test("Fix Pack telemetry endpoint rejects unknown events", async ({ request }) => {
+    const res = await request.post("/api/v1/fix-pack/events", {
+      data: { event: "fixpack.prompt.body", scanId: "not-a-scan" },
     });
     expect(res.status()).toBe(400);
   });

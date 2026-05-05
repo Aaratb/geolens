@@ -3,7 +3,7 @@ import { getFixPackActionState, getFixPackDownloadHref } from "./ui-state";
 
 describe("Fix Pack UI state", () => {
   it("asks eligible users to generate a missing Fix Pack", () => {
-    expect(getFixPackActionState({ eligible: true, status: "not_generated" })).toEqual({
+    expect(getFixPackActionState({ status: "not_generated" })).toEqual({
       label: "Generate Fix Pack",
       disabled: false,
       tone: "accent",
@@ -11,7 +11,7 @@ describe("Fix Pack UI state", () => {
   });
 
   it("disables actions while generation is already in progress", () => {
-    expect(getFixPackActionState({ eligible: true, status: "generating" })).toEqual({
+    expect(getFixPackActionState({ status: "generating" })).toEqual({
       label: "Generating...",
       disabled: true,
       tone: "muted",
@@ -19,7 +19,7 @@ describe("Fix Pack UI state", () => {
   });
 
   it("switches to download once a completed pack exists", () => {
-    expect(getFixPackActionState({ eligible: true, status: "completed" })).toEqual({
+    expect(getFixPackActionState({ status: "completed" })).toEqual({
       label: "Download agent.md",
       disabled: false,
       tone: "accent",
@@ -27,18 +27,10 @@ describe("Fix Pack UI state", () => {
   });
 
   it("allows eligible users to retry a failed Fix Pack", () => {
-    expect(getFixPackActionState({ eligible: true, status: "failed" })).toEqual({
+    expect(getFixPackActionState({ status: "failed" })).toEqual({
       label: "Generate Fix Pack",
       disabled: false,
       tone: "accent",
-    });
-  });
-
-  it("routes ineligible users to the waitlist", () => {
-    expect(getFixPackActionState({ eligible: false, status: "not_generated" })).toEqual({
-      label: "Join the waitlist",
-      disabled: false,
-      tone: "outline",
     });
   });
 

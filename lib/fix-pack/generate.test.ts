@@ -18,6 +18,7 @@ const validPayload: FixPackPayload = {
       assetText: "# Example\n\n> Canonical pages for AI assistants.",
       checklist: ["Create public llms.txt", "Link canonical docs"],
       validationSteps: ["Open /llms.txt and verify a 200 response"],
+      caveat: null,
     },
     {
       findingId: "22222222-2222-4222-8222-222222222222",
@@ -31,6 +32,7 @@ const validPayload: FixPackPayload = {
       assetText: "Title: Project management software for engineering teams",
       checklist: ["Update title", "Update meta description"],
       validationSteps: ["Inspect rendered metadata locally"],
+      caveat: null,
     },
     {
       findingId: "33333333-3333-4333-8333-333333333333",

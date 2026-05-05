@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import type { Gap } from "@/lib/score/gaps";
-import { WaitlistDialog } from "./waitlist-dialog";
 
 const SEVERITY_COLOR: Record<Gap["severity"], string> = {
   critical: "var(--color-score-bad-dark)",
@@ -11,52 +10,62 @@ const SEVERITY_COLOR: Record<Gap["severity"], string> = {
   low: "var(--color-score-good-dark)",
 };
 
-export function GapCard({ gap, scanId }: { gap: Gap; scanId?: string }) {
-  const [open, setOpen] = useState(false);
+export function GapCard({
+  gap,
+  scanId,
+  signedIn = false,
+}: {
+  gap: Gap;
+  scanId?: string;
+  signedIn?: boolean;
+}) {
+  const fixPackHref = scanId
+    ? signedIn
+      ? `/scan/${scanId}/fix-pack`
+      : `/sign-in?redirect_url=${encodeURIComponent(`/scan/${scanId}/fix-pack`)}`
+    : null;
 
   return (
-    <>
-      <div className="surface rounded-xl p-4 flex items-start gap-4">
-        <span className="font-mono-tabular text-[11px] marginalia mt-0.5 shrink-0">#{gap.id}</span>
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium" style={{ color: "var(--ink)" }}>
-            {gap.title}
-          </div>
-          <div className="text-[13px] marginalia mt-1">{gap.why}</div>
-          <div className="mt-2 font-mono-tabular text-[10px] uppercase tracking-[0.18em] marginalia flex items-center gap-3 flex-wrap">
-            <span className="flex items-center gap-1.5">
-              <span
-                className="inline-block w-1.5 h-1.5 rounded-full"
-                style={{ background: SEVERITY_COLOR[gap.severity] }}
-              />
-              {gap.severity}
-            </span>
-            {gap.effort ? <span>· effort {gap.effort}</span> : null}
-            {gap.scoreImpact ? <span>· +{gap.scoreImpact} pts</span> : null}
-            {gap.category === "engine" ? (
-              <span title="This finding is derived from AI engine probe responses, which may be inaccurate or biased.">
-                · AI-derived
-              </span>
-            ) : null}
-          </div>
+    <div className="surface flex items-start gap-4 rounded-xl p-4">
+      <span className="font-mono-tabular marginalia mt-0.5 shrink-0 text-[11px]">#{gap.id}</span>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+          {gap.title}
         </div>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
+        <div className="marginalia mt-1 text-[13px]">{gap.why}</div>
+        <div className="font-mono-tabular marginalia mt-2 flex flex-wrap items-center gap-3 text-[10px] tracking-[0.18em] uppercase">
+          <span className="flex items-center gap-1.5">
+            <span
+              className="inline-block h-1.5 w-1.5 rounded-full"
+              style={{ background: SEVERITY_COLOR[gap.severity] }}
+            />
+            {gap.severity}
+          </span>
+          {gap.effort ? <span>· effort {gap.effort}</span> : null}
+          {gap.scoreImpact ? <span>· +{gap.scoreImpact} pts</span> : null}
+          {gap.category === "engine" ? (
+            <span title="This finding is derived from AI engine probe responses, which may be inaccurate or biased.">
+              · AI-derived
+            </span>
+          ) : null}
+        </div>
+      </div>
+      {fixPackHref ? (
+        <Link
+          href={fixPackHref}
           className="text-[12px] whitespace-nowrap hover:opacity-80"
           style={{ color: "var(--color-accent-soft)" }}
         >
+          {signedIn ? "Fix with our agent →" : "Sign in to fix →"}
+        </Link>
+      ) : (
+        <span
+          className="text-[12px] whitespace-nowrap opacity-60"
+          style={{ color: "var(--color-accent-soft)" }}
+        >
           Fix with our agent →
-        </button>
-      </div>
-
-      <WaitlistDialog
-        open={open}
-        onOpenChange={setOpen}
-        scanId={scanId}
-        gapTitle={gap.title}
-        source="gap_cta"
-      />
-    </>
+        </span>
+      )}
+    </div>
   );
 }

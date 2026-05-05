@@ -1,7 +1,13 @@
 import { z } from "zod";
 
+// Note: optional fields use `.nullable()` (not `.optional()`) because the LLM
+// schema goes through OpenAI's strict-JSON-schema mode via the AI Gateway.
+// Strict mode requires every property key to appear in `required`, so the
+// model must always emit the key — `null` is the agreed "absent" sentinel.
+// `.optional()` produces a JSON Schema without the key in `required`, which
+// OpenAI rejects as "Invalid schema for response_format".
 export const FixPackCardSchema = z.object({
-  findingId: z.string().uuid().optional(),
+  findingId: z.string().uuid().nullable(),
   displayId: z.string().min(1).max(24),
   title: z.string().min(1).max(160),
   severity: z.enum(["critical", "high", "medium", "low"]),
@@ -13,7 +19,7 @@ export const FixPackCardSchema = z.object({
   assetText: z.string().min(1).max(6000),
   checklist: z.array(z.string().min(1).max(300)).min(2).max(6),
   validationSteps: z.array(z.string().min(1).max(300)).min(1).max(6),
-  caveat: z.string().min(1).max(500).optional(),
+  caveat: z.string().min(1).max(500).nullable(),
 });
 
 export const FixPackPayloadSchema = z.object({

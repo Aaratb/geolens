@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  buildFixPackClientTelemetryProps,
-  FixPackClientTelemetryBody,
-} from "./fixpack-client";
+import { buildFixPackClientTelemetryProps, FixPackClientTelemetryBody } from "./fixpack-client";
 
 describe("Fix Pack client telemetry contract", () => {
   it("accepts only client-side Fix Pack interaction events", () => {
@@ -11,11 +8,13 @@ describe("Fix Pack client telemetry contract", () => {
         event: "fixpack.cta.clicked",
         scanId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
         source: "scan_report",
+        action: "sign_in",
       }),
     ).toEqual({
       event: "fixpack.cta.clicked",
       scanId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       source: "scan_report",
+      action: "sign_in",
     });
 
     expect(() =>

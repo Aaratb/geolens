@@ -37,7 +37,10 @@ export async function POST(req: NextRequest) {
   const limit = await limitWaitlist(ipHash);
   if (!limit.ok) {
     return NextResponse.json(
-      { error: "rate_limited", message: "Too many waitlist signups from this IP. Try again in an hour." },
+      {
+        error: "rate_limited",
+        message: "Too many waitlist signups from this IP. Try again in an hour.",
+      },
       { status: 429 },
     );
   }
@@ -45,7 +48,7 @@ export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
 
   try {
-    await db
+    const [inserted] = await db
       .insert(waitlistEntries)
       .values({
         email: payload.email.toLowerCase(),
@@ -53,22 +56,25 @@ export async function POST(req: NextRequest) {
         gapId: payload.gapId ?? null,
         source: payload.source ?? null,
       })
-      .onConflictDoNothing();
+      .onConflictDoNothing()
+      .returning({ id: waitlistEntries.id });
+
+    if (inserted) {
+      track({
+        event: "waitlist.joined",
+        userId: user?.id ?? null,
+        props: {
+          source: payload.source,
+          scanId: payload.scanId,
+          gapId: payload.gapId,
+          anonymous: !user,
+        },
+      });
+    }
   } catch (err) {
     console.error("[waitlist] insert failed", err);
     return NextResponse.json({ error: "insert_failed" }, { status: 500 });
   }
-
-  track({
-    event: "waitlist.joined",
-    userId: user?.id ?? null,
-    props: {
-      source: payload.source,
-      scanId: payload.scanId,
-      gapId: payload.gapId,
-      anonymous: !user,
-    },
-  });
 
   return NextResponse.json({ ok: true });
 }
